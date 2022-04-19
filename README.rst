@@ -33,6 +33,7 @@ Overview
 .. end-badges
 
 This is a Python package for processing and analyzing data from the Electron Electrostatic Analyzer (EEA) instrument on the Lunar Gateway.
+The EEA provides measurements of low-energy electrons in the solar wind and in Earth’s deep magnetotail by measuring electron flux as functions of energy and direction.
 
 License
 -------
