@@ -46,7 +46,6 @@ def calibrate_file(data_filename, output_level=2):
 
     # example log messages
 
-
     return None
 
 
