@@ -1,4 +1,5 @@
 # Licensed under Apache License v2 - see LICENSE.rst
+from hermes_core import log
 
 try:
     from .version import __version__
@@ -17,3 +18,5 @@ from hermes_eea.io.file_tools import read_file
 # Then you can be explicit to control what ends up in the namespace,
 # __all__ = ["config", "print_config", "do_primes"]
 # __all__ = ["read_file"]
+
+log.debug(f"hermes_eea version: {__version__}")
