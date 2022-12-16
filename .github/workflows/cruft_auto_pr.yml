@@ -1,0 +1,36 @@
+# This is a scheduled workflow that creates a PR with the latest changes from the template repo utilizing the cruft tool
+
+name: Cruft Automated Pull Requests
+
+# Controls when the workflow will run
+on:
+  schedule:
+  - cron: "0 0 * * *"
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v3
+      
+      - name: Install Cruft
+        run: pip install cruft
+        
+      - name: Run Cruft Update
+        run: cruft update -y
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4.2.0
+        with:
+          title: 'Cruft Template Update'
+          body: '<h2>Cruft Automated Changes:</h2><br/><p>This PR was generated automatically by Cruft, an update to the template repo. Please check the additions/deletions before merging (and edit if required).</p>'
