@@ -1,11 +1,12 @@
 {
   "template": "https://github.com/HERMES-SOC/hermes_instrument.git",
-  "commit": "2374d640e38b0c3a4931b04f5d8570c9a10300a4",
+  "commit": "edc84fdbf86ada9053c92165f1e8203887a4313e",
   "context": {
     "cookiecutter": {
       "instr_name": "eea",
       "_template": "https://github.com/HERMES-SOC/hermes_instrument.git"
     }
   },
-  "directory": null
+  "directory": null,
+  "checkout": null
 }
