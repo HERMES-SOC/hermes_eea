@@ -1,6 +1,6 @@
 {
   "template": "https://github.com/HERMES-SOC/hermes_instrument.git",
-  "commit": "edc84fdbf86ada9053c92165f1e8203887a4313e",
+  "commit": "eb7472acb3040056ba950cd6bbf54d3c61e9117b",
   "context": {
     "cookiecutter": {
       "instr_name": "eea",
