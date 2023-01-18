@@ -29,13 +29,11 @@
 		"python.linting.pydocstylePath": "/usr/local/bin/pydocstyle",
 		"python.linting.pylintPath": "/usr/bin/pylint",
 		"terminal.integrated.profiles.linux": {
-			"bash (login)": {
-				"path": "/bin/bash",
-				"args": [
-					""
-				]
+			"bash": {
+				"path": "/bin/bash"
 			}
-		}
+		},
+		"terminal.integrated.defaultProfile.linux": "bash"
 	},
 	// Add the IDs of extensions you want installed when the container is created.
 	"extensions": [
