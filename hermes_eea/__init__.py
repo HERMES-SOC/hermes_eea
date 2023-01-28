@@ -5,9 +5,11 @@ from hermes_core import log
 from hermes_eea.io.file_tools import read_file
 
 try:
-    from .version import __version__
+    from ._version import __version__
+    from ._version import version_tuple
 except ImportError:
     __version__ = "unknown"
+    version_tuple = (0, 0, "unknown version")
 
 __all__ = ["log", "read_file"]
 
