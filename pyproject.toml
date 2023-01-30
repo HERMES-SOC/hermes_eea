@@ -99,8 +99,4 @@ omit = [
 ]
 
 [tool.black]
-extend-exclude = '''
-/(
-    _version.py
-)/
-'''
+extend-exclude = '''hermes_eea/_version.py'''
