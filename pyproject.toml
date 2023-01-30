@@ -31,6 +31,7 @@ dependencies = [
   'astropy>=4.1.0',
   'numpy>=1.16.0',
   'hermes_core @ git+https://github.com/HERMES-SOC/hermes_core/',
+  'ccsdspy @ git+https://github.com/ddasilva/ccsdspy.git'
 ]
 
 [project.optional-dependencies]
@@ -97,3 +98,5 @@ omit = [
   '*/hermes_eea/version*',
 ]
 
+[tool.black]
+extend-exclude = '''hermes_eea/_version.py'''
