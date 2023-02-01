@@ -1,5 +1,6 @@
 from ccsdspy import FixedLength
 import numpy as np
+
 """
 This module provides a generic file reader.
 """
@@ -57,7 +58,7 @@ def unbin_field(field_bin: np.bytes_, bin_cnt: int, bin_size: int):
 
     bin_cnt:
         Number of bins in the field.
-    
+
     bin_size:
         Length of each bin in the field.
 
