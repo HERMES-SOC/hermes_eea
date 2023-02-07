@@ -6,5 +6,5 @@ SHEID, uint, 8
 STEP, uint, 8
 COUNTER1, uint, 16
 COUNTER2, uint, 16
-ACCUM, "int(34)", 12
+ACCUM, "uint(34)", 12
 CKSUM16, uint, 16

@@ -81,11 +81,8 @@ def calibrate_file(data_filename: Path) -> Path:
         file_metadata["instrument"] == hermes_eea.INST_NAME
         and file_metadata["level"] == "l0"
     ):
-        #  data = parse_l0_sci_packets(data_filename)
-        data = {}
-        # test opening the file
-        with open(data_filename, "r") as fp:
-            pass
+        data = parse_l0_sci_packets(data_filename)
+
         level1_filename = l0_sci_data_to_cdf(data, data_filename)
         output_filename = level1_filename
     elif (
@@ -152,7 +149,7 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     log.info(f"Parsing packets from file:{data_filename}.")
 
     pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "EEA_sci_packet_def.csv")
+        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
     )
     data = pkt.load(data_filename)
     return data
