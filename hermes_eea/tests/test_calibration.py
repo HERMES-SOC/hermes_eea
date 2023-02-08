@@ -9,10 +9,11 @@ from hermes_core.util.util import create_science_filename, parse_science_filenam
 level1_filename = "hermes_eea_l1_20221205_000000_v1.0.0.cdf"
 ql_filename = "hermes_eea_ql_20221205_000000_v1.0.0.cdf"
 
+
 @pytest.fixture(scope="session")
 def level0_file(tmp_path_factory):
     fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023038-000000_v0.bin"))
-    return fn 
+    return fn
 
 
 @pytest.fixture(scope="session")
