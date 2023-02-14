@@ -1,0 +1,557 @@
+! Skeleton table for the "hermes_eea_l1_00000000000000_v0.0.0.cdf" CDF.
+! Generated: Tuesday, 14-Feb-2023 15:33:17
+! CDF created/modified by CDF V3.7.1
+! Skeleton table created by CDF V3.7.1_0
+
+#header
+
+                       CDF NAME: hermes_eea_l1_00000000000000_v0.0.0.cdf
+                  DATA ENCODING: IBMPC
+                       MAJORITY: COLUMN
+                         FORMAT: SINGLE
+
+! Variables  G.Attributes  V.Attributes  Records  Dims  Sizes
+! ---------  ------------  ------------  -------  ----  -----
+     0/9          25            37         0/z      0
+! CDF_COMPRESSION: None
+! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+! CDF_CHECKSUM: MD5
+! (Valid checksum: None, MD5)
+! CDF_LEAPSECONDLASTUPDATED: 20170101
+
+
+#GLOBALattributes
+
+! Attribute         Entry       Data
+! Name              Number      Type       Value
+! ---------         ------      ----       -----
+
+  "Project"             1:    CDF_CHAR     { "STP>Solar-Terrestrial " -
+                                             "Physics" } .
+
+  "Source_name"         1:    CDF_CHAR     { "HERMES>Heliophysics " -
+                                             "Environmental and " -
+                                             "Radiation Measurement " -
+                                             "Experiment Suite" } .
+
+  "Discipline"          1:    CDF_CHAR     { "Space " -
+                                             "Physics>Magnetospheric " -
+                                             "Science" } .
+
+  "Data_type"           1:    CDF_CHAR     { "fast_l1a_des-cnts" } .
+
+  "Descriptor"          1:    CDF_CHAR     { "EEA>Electron Electrostatic" -
+                                             " Analyzer" } .
+
+  "File_naming_convention"
+                        1:    CDF_CHAR     { "source_descriptor_datatype" -
+                                             "_yyyyMMddHHmmss" } .
+
+  "Data_version"        1:    CDF_CHAR     { "0.0.0" } .
+
+  "PI_name"             1:    CDF_CHAR     { "D. Gershman" } .
+
+  "PI_affiliation"      1:    CDF_CHAR     { "GSFC" } .
+
+  "TEXT"                1:    CDF_CHAR     { "HERMES EEA EEA measures " -
+                                             "electrons in the range " -
+                                             "from 5ev-10 KeV. The EEA " -
+                                             "Science objectives include" -
+                                             " determining mechanisms of" -
+                                             " solar wind mass and " -
+                                             "energy transport, " -
+                                             "characterizing energy, " -
+                                             "topology, and ion " -
+                                             "composition in the deep " -
+                                             "magnetotail, and " -
+                                             "establishing observational" -
+                                             " capabilities of an " -
+                                             "on-board pathfinder " -
+                                             "payload measuring local " -
+                                             "space weather to support " -
+                                             "deep-space and long-term " -
+                                             "human exploration." } .
+
+  "Instrument_type"     1:    CDF_CHAR     { "Plasma and Solar Wind" }
+                        2:    CDF_CHAR     { "Particles (space)" } .
+
+  "Mission_group"       1:    CDF_CHAR     { "HERMES" } .
+
+  "Logical_source"      1:    CDF_CHAR     { "hermes_eea_l1_cnts" } .
+
+  "Logical_file_id"     1:    CDF_CHAR     { "hermes_eea_l1_000000000000" -
+                                             "00_v0.0.0" } .
+
+  "Logical_source_description"
+                        1:    CDF_CHAR     { "HERMES Electron " -
+                                             "Electrostatic Analyzer " -
+                                             "accumulation counts" } .
+
+  "Time_resolution"     1:    CDF_CHAR     { "1 second" } .
+
+  "Rules_of_use" .
+
+  "Generated_by"        1:    CDF_CHAR     { "HERMES EEA, NASA/GSFC Code" -
+                                             " 673" } .
+
+  "Generation_date"     1:    CDF_CHAR     { "20151102" } .
+
+  "Generation_site"     1:    CDF_CHAR     { "ITF" } .
+
+  "Acknowledgement" .
+
+  "MODS"                1:    CDF_CHAR     { "V1.0.0 - initial version" } .
+
+  "LINK_TEXT"           1:    CDF_CHAR     { "HERMES home page" }
+                        2:    CDF_CHAR     { "EEA home page" }
+                        3:    CDF_CHAR     { "Science Data Center" } .
+
+  "LINK_TITLE"          1:    CDF_CHAR     { "at GSFC" }
+                        2:    CDF_CHAR     { "at GSFC" }
+                        3:    CDF_CHAR     { "at GSFC" } .
+
+  "HTTP_LINK"           1:    CDF_CHAR     { "https://hermes.gsfc.nasa.gov" }
+                        2:    CDF_CHAR     { "https://hermes.gsfc.nasa.gov" }
+                        3:    CDF_CHAR     { "https://hermes.gsfc.nasa.gov" } .
+
+
+#VARIABLEattributes
+
+  "ABSOLUTE_ERROR"
+  "CATDESC"
+  "COORDINATE_SYSTEM"
+  "DELTA_PLUS_VAR"
+  "DELTA_MINUS_VAR"
+  "DEPEND_0"
+  "DEPEND_1"
+  "DEPEND_2"
+  "DEPEND_3"
+  "DISPLAY_TYPE"
+  "FIELDNAM"
+  "FILLVAL"
+  "FORMAT"
+  "FORM_PTR"
+  "LABLAXIS"
+  "LABL_PTR_1"
+  "LABL_PTR_2"
+  "LABL_PTR_3"
+  "LEAP_SECONDS_INCLUDED"
+  "MONOTON"
+  "REFERENCE_POSITION"
+  "RELATIVE_ERROR"
+  "REPRESENTATION_1"
+  "REPRESENTATION_2"
+  "RESOLUTION"
+  "SCALETYP"
+  "SCAL_PTR"
+  "SI_CONVERSION"
+  "TENSOR_ORDER"
+  "TIME_BASE"
+  "TIME_SCALE"
+  "UNITS"
+  "UNIT_PTR"
+  "VALIDMIN"
+  "VALIDMAX"
+  "VAR_NOTES"
+  "VAR_TYPE"
+
+
+#variables
+
+! No rVariables.
+
+
+#zVariables
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "Epoch"     CDF_TIME_TT2000     1       0              T
+
+  ! VAR_COMPRESSION: None
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 1707-09-22T12:13:15.145224192
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "Nanoseconds since J2000" }
+    "DELTA_PLUS_VAR"
+                  CDF_CHAR     { "Epoch_plus_var" }
+    "DELTA_MINUS_VAR"
+                  CDF_CHAR     { "Epoch_minus_var" }
+    "FIELDNAM"    CDF_CHAR     { "Time tags" }
+    "FILLVAL"
+              CDF_TIME_TT2000   { 1707-09-22T12:13:15.145224192 }
+    "LABLAXIS"    CDF_CHAR     { "Epoch" }
+    "MONOTON"     CDF_CHAR     { "INCREASE" }
+    "REFERENCE_POSITION"
+                  CDF_CHAR     { "Rotating Earth Geoid" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "SI_CONVERSION"
+                  CDF_CHAR     { "1.0e-9>s" }
+    "TIME_BASE"   CDF_CHAR     { "J2000" }
+    "TIME_SCALE"  CDF_CHAR     { "Terrestrial Time" }
+    "UNITS"       CDF_CHAR     { "ns" }
+    "VALIDMIN"
+              CDF_TIME_TT2000   { 1990-01-01T00:00:00.000000000 }
+    "VALIDMAX"
+              CDF_TIME_TT2000   { 2100-01-01T00:00:00.000000000 }
+    "VAR_NOTES"   CDF_CHAR     { "HERMES EEA data time; start of " -
+                                 "integration for 1st step of the table" }
+    "VAR_TYPE"    CDF_CHAR     { "support_data" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "Epoch_plus_var"
+                  CDF_REAL4      1       0              F
+
+  ! VAR_COMPRESSION: None
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_BLOCKINGFACTOR: 1
+  ! VAR_PADVALUE: -1.0e+30
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA epoch plus var" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES EEA epoch plus var" }
+    "FORMAT"      CDF_CHAR     { "F4.2" }
+    "SI_CONVERSION"
+                  CDF_CHAR     { "1.0>s" }
+    "UNITS"       CDF_CHAR     { "s" }
+    "VALIDMIN"    CDF_REAL4    { 0.0 }
+    "VALIDMAX"    CDF_REAL4    { 4.5 }
+    "VAR_TYPE"    CDF_CHAR     { "support_data" } .
+
+  ! NRV values follow...
+
+    [] = 1.0
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "Epoch_minus_var"
+                  CDF_REAL4      1       0              F
+
+  ! VAR_COMPRESSION: None
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_BLOCKINGFACTOR: 1
+  ! VAR_PADVALUE: -1.0e+30
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA epoch minus var" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES EEA epoch minus var" }
+    "FORMAT"      CDF_CHAR     { "F4.2" }
+    "SI_CONVERSION"
+                  CDF_CHAR     { "1.0>s" }
+    "UNITS"       CDF_CHAR     { "s" }
+    "VALIDMIN"    CDF_REAL4    { 0.0 }
+    "VALIDMAX"    CDF_REAL4    { 4.5 }
+    "VAR_TYPE"    CDF_CHAR     { "support_data" } .
+
+  ! NRV values follow...
+
+    [] = 0.0
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "hermes_eea_step_counter"
+                  CDF_UINT1      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 254
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA integration step counter" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series>scatter" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES " }
+    "FILLVAL"     CDF_UINT1    { 255 }
+    "FORMAT"      CDF_CHAR     { "I1" }
+    "LABLAXIS"    CDF_CHAR     { "Steps" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "UNITS"       CDF_CHAR     { "steps" }
+    "VALIDMIN"    CDF_UINT1    { 0 }
+    "VALIDMAX"    CDF_UINT1    { 255 }
+    "VAR_NOTES"   CDF_CHAR     { "8-bit integration step counter" }
+    "VAR_TYPE"    CDF_CHAR     { "data" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "hermes_eea_counter1"
+                  CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA FPGA-pulse-a counter" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series>scatter" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES " }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I1" }
+    "LABLAXIS"    CDF_CHAR     { "Counter1" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "UNITS"       CDF_CHAR     { "steps" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_NOTES"   CDF_CHAR     { "Counts the 'FPGA-pulse-a' from FEE " -
+                                 "digital output" }
+    "VAR_TYPE"    CDF_CHAR     { "data" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "hermes_eea_counter2"
+                  CDF_UINT2      1       0              T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA FPGA-pulse-b counter" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "time_series>scatter" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES " }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I1" }
+    "LABLAXIS"    CDF_CHAR     { "Counter2" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "UNITS"       CDF_CHAR     { "steps" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_NOTES"   CDF_CHAR     { "Counts the 'FPGA-pulse-b' from FEE " -
+                                 "digital output" }
+    "VAR_TYPE"    CDF_CHAR     { "data" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "hermes_eea_accumulations"
+                  CDF_UINT2      1       1     34       T         T
+
+  ! VAR_COMPRESSION: GZIP.6
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_PADVALUE: 65534
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA accumulations" }
+    "DEPEND_0"    CDF_CHAR     { "Epoch" }
+    "DEPEND_1"    CDF_CHAR     { "hermes_eea_sector_index" }
+    "DISPLAY_TYPE"
+                  CDF_CHAR     { "spectrogram" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES EEA accumulations" }
+    "FILLVAL"     CDF_UINT2    { 65535 }
+    "FORMAT"      CDF_CHAR     { "I5.5" }
+    "LABLAXIS"    CDF_CHAR     { "hermes_eea_sector_label" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "UNITS"       CDF_CHAR     { "raw instrument acccumulations" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_NOTES"   CDF_CHAR     { "Az bin:" }
+    "VAR_TYPE"    CDF_CHAR     { "data" } .
+
+  ! RV values were not requested.
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "hermes_eea_sector_index"
+                  CDF_INT1       1       1     34       F         T
+
+  ! VAR_COMPRESSION: None
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_BLOCKINGFACTOR: 1
+  ! VAR_PADVALUE: -127
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES EEA azimuth sector index used " -
+                                 "in some types of outputs" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES/EEA sector index" }
+    "FILLVAL"     CDF_INT1     { -128 }
+    "FORMAT"      CDF_CHAR     { "I2.2" }
+    "LABLAXIS"    CDF_CHAR     { "EEA sect ind" }
+    "SCALETYP"    CDF_CHAR     { "linear" }
+    "UNITS"       CDF_CHAR     { "00-33" }
+    "VALIDMIN"    CDF_INT1     { 0 }
+    "VALIDMAX"    CDF_INT1     { 33 }
+    "VAR_NOTES"   CDF_CHAR     { "Azimuth bin: sector index=00 looks " -
+                                 '"after" (spin-phase) Sun, ..., sector ' -
+                                 'index=31 looks "before" Sun dir.' }
+    "VAR_TYPE"    CDF_CHAR     { "support_data" } .
+
+  ! NRV values follow...
+
+    [1] = 00
+    [2] = 01
+    [3] = 02
+    [4] = 03
+    [5] = 04
+    [6] = 05
+    [7] = 06
+    [8] = 07
+    [9] = 08
+    [10] = 09
+    [11] = 10
+    [12] = 11
+    [13] = 12
+    [14] = 13
+    [15] = 14
+    [16] = 15
+    [17] = 16
+    [18] = 17
+    [19] = 18
+    [20] = 19
+    [21] = 20
+    [22] = 21
+    [23] = 22
+    [24] = 23
+    [25] = 24
+    [26] = 25
+    [27] = 26
+    [28] = 27
+    [29] = 28
+    [30] = 29
+    [31] = 30
+    [32] = 31
+    [33] = 32
+    [34] = 33
+
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
+
+  "hermes_eea_sector_label"
+                  CDF_CHAR      10       1     34       F         T
+
+  ! VAR_COMPRESSION: None
+  ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
+  ! VAR_SPARSERECORDS: None
+  ! (Valid sparserecords: None, sRecords.PAD, sRecords.PREV)
+  ! VAR_BLOCKINGFACTOR: 1
+  ! VAR_PADVALUE: " "
+
+  ! Attribute       Data
+  ! Name            Type       Value
+  ! --------        ----       -----
+
+    "CATDESC"     CDF_CHAR     { "HERMES/EEA azimuth sector label used " -
+                                 "in some types of outputs" }
+    "FIELDNAM"    CDF_CHAR     { "HERMES/EEA sector label" }
+    "FORMAT"      CDF_CHAR     { "A11" }
+    "LABLAXIS"    CDF_CHAR     { "hermes_eea_sector_label" }
+    "VAR_NOTES"   CDF_CHAR     { 'Azimuth bin: "sector00" looks after ' -
+                                 'Sun, ..., "sector31" looks before Sun ' -
+                                 "dir." }
+    "VAR_TYPE"    CDF_CHAR     { "metadata" } .
+
+  ! NRV values follow...
+
+    [1] = { "sector00  " }
+    [2] = { "sector01  " }
+    [3] = { "sector02  " }
+    [4] = { "sector03  " }
+    [5] = { "sector04  " }
+    [6] = { "sector05  " }
+    [7] = { "sector06  " }
+    [8] = { "sector07  " }
+    [9] = { "sector08  " }
+    [10] = { "sector09  " }
+    [11] = { "sector10  " }
+    [12] = { "sector11  " }
+    [13] = { "sector12  " }
+    [14] = { "sector13  " }
+    [15] = { "sector14  " }
+    [16] = { "sector15  " }
+    [17] = { "sector16  " }
+    [18] = { "sector17  " }
+    [19] = { "sector18  " }
+    [20] = { "sector19  " }
+    [21] = { "sector20  " }
+    [22] = { "sector21  " }
+    [23] = { "sector22  " }
+    [24] = { "sector23  " }
+    [25] = { "sector24  " }
+    [26] = { "sector25  " }
+    [27] = { "sector26  " }
+    [28] = { "sector27  " }
+    [29] = { "sector28  " }
+    [30] = { "sector29  " }
+    [31] = { "sector30  " }
+    [32] = { "sector31  " }
+    [33] = { "sector32  " }
+    [34] = { "sector33  " }
+
+
+#end
