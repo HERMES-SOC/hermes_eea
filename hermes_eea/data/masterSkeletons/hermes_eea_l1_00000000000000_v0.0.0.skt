@@ -1,5 +1,5 @@
 ! Skeleton table for the "hermes_eea_l1_00000000000000_v0.0.0.cdf" CDF.
-! Generated: Tuesday, 7-Feb-2023 11:51:28
+! Generated: Tuesday, 14-Feb-2023 15:33:17
 ! CDF created/modified by CDF V3.7.1
 ! Skeleton table created by CDF V3.7.1_0
 
@@ -12,7 +12,7 @@
 
 ! Variables  G.Attributes  V.Attributes  Records  Dims  Sizes
 ! ---------  ------------  ------------  -------  ----  -----
-    0/24          25            37         0/z      0
+     0/9          25            37         0/z      0
 ! CDF_COMPRESSION: None
 ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
 ! CDF_CHECKSUM: MD5
@@ -79,7 +79,8 @@
 
   "Logical_source"      1:    CDF_CHAR     { "hermes_eea_l1_cnts" } .
 
-  "Logical_file_id"     1:    CDF_CHAR     { "hermes_eea_l1_00000000000000_v0.0.0" } .
+  "Logical_file_id"     1:    CDF_CHAR     { "hermes_eea_l1_000000000000" -
+                                             "00_v0.0.0" } .
 
   "Logical_source_description"
                         1:    CDF_CHAR     { "HERMES Electron " -
@@ -278,7 +279,7 @@
 ! --------          ----     --------  ----  -----  --------  ---------
 
   "hermes_eea_step_counter"
-                  CDF_UINT1       1       0              T
+                  CDF_UINT1      1       0              T
 
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
@@ -295,13 +296,13 @@
     "DISPLAY_TYPE"
                   CDF_CHAR     { "time_series>scatter" }
     "FIELDNAM"    CDF_CHAR     { "HERMES " }
-    "FILLVAL"     CDF_INT1     { -128 }
+    "FILLVAL"     CDF_UINT1    { 255 }
     "FORMAT"      CDF_CHAR     { "I1" }
     "LABLAXIS"    CDF_CHAR     { "Steps" }
     "SCALETYP"    CDF_CHAR     { "linear" }
     "UNITS"       CDF_CHAR     { "steps" }
-    "VALIDMIN"    CDF_INT1     { 0 }
-    "VALIDMAX"    CDF_INT1     { 255 }
+    "VALIDMIN"    CDF_UINT1    { 0 }
+    "VALIDMAX"    CDF_UINT1    { 255 }
     "VAR_NOTES"   CDF_CHAR     { "8-bit integration step counter" }
     "VAR_TYPE"    CDF_CHAR     { "data" } .
 
@@ -313,7 +314,7 @@
 ! --------          ----     --------  ----  -----  --------  ---------
 
   "hermes_eea_counter1"
-                  CDF_UINT2       1       0              T
+                  CDF_UINT2      1       0              T
 
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
@@ -330,24 +331,26 @@
     "DISPLAY_TYPE"
                   CDF_CHAR     { "time_series>scatter" }
     "FIELDNAM"    CDF_CHAR     { "HERMES " }
-    "FILLVAL"     CDF_INT1     { -128 }
+    "FILLVAL"     CDF_UINT2    { 65535 }
     "FORMAT"      CDF_CHAR     { "I1" }
     "LABLAXIS"    CDF_CHAR     { "Counter1" }
     "SCALETYP"    CDF_CHAR     { "linear" }
     "UNITS"       CDF_CHAR     { "steps" }
-    "VALIDMIN"    CDF_INT1     { 0 }
-    "VALIDMAX"    CDF_INT1     { 65535 }
-    "VAR_NOTES"   CDF_CHAR     { "Counts the 'FPGA-pulse-a' from FEE digital output" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_NOTES"   CDF_CHAR     { "Counts the 'FPGA-pulse-a' from FEE " -
+                                 "digital output" }
     "VAR_TYPE"    CDF_CHAR     { "data" } .
 
   ! RV values were not requested.
+
 
 ! Variable          Data      Number                 Record   Dimension
 ! Name              Type     Elements  Dims  Sizes  Variance  Variances
 ! --------          ----     --------  ----  -----  --------  ---------
 
   "hermes_eea_counter2"
-                  CDF_UINT2       1       0              T
+                  CDF_UINT2      1       0              T
 
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
@@ -364,24 +367,26 @@
     "DISPLAY_TYPE"
                   CDF_CHAR     { "time_series>scatter" }
     "FIELDNAM"    CDF_CHAR     { "HERMES " }
-    "FILLVAL"     CDF_INT1     { -128 }
+    "FILLVAL"     CDF_UINT2    { 65535 }
     "FORMAT"      CDF_CHAR     { "I1" }
     "LABLAXIS"    CDF_CHAR     { "Counter2" }
     "SCALETYP"    CDF_CHAR     { "linear" }
     "UNITS"       CDF_CHAR     { "steps" }
-    "VALIDMIN"    CDF_INT1     { 0 }
-    "VALIDMAX"    CDF_INT1     { 65535 }
-    "VAR_NOTES"   CDF_CHAR     { "Counts the 'FPGA-pulse-b' from FEE digital output" }
+    "VALIDMIN"    CDF_UINT2    { 0 }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_NOTES"   CDF_CHAR     { "Counts the 'FPGA-pulse-b' from FEE " -
+                                 "digital output" }
     "VAR_TYPE"    CDF_CHAR     { "data" } .
 
   ! RV values were not requested.
 
-! Variable          Data      Number                    Record   Dimension
-! Name              Type     Elements  Dims   Sizes    Variance  Variances
-! --------          ----     --------  ----  --------  --------  ---------
+
+! Variable          Data      Number                 Record   Dimension
+! Name              Type     Elements  Dims  Sizes  Variance  Variances
+! --------          ----     --------  ----  -----  --------  ---------
 
   "hermes_eea_accumulations"
-                  CDF_UINT2      1       3     34       T         T
+                  CDF_UINT2      1       1     34       T         T
 
   ! VAR_COMPRESSION: GZIP.6
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
@@ -405,8 +410,8 @@
     "SCALETYP"    CDF_CHAR     { "linear" }
     "UNITS"       CDF_CHAR     { "raw instrument acccumulations" }
     "VALIDMIN"    CDF_UINT2    { 0 }
-    "VALIDMAX"    CDF_UINT2    { 65534 }
-    "VAR_NOTES"   CDF_CHAR     { 'Az bin: }
+    "VALIDMAX"    CDF_UINT2    { 65535 }
+    "VAR_NOTES"   CDF_CHAR     { "Az bin:" }
     "VAR_TYPE"    CDF_CHAR     { "data" } .
 
   ! RV values were not requested.
@@ -417,7 +422,7 @@
 ! --------          ----     --------  ----  -----  --------  ---------
 
   "hermes_eea_sector_index"
-                  CDF_INT1       1       1     32       F         T
+                  CDF_INT1       1       1     34       F         T
 
   ! VAR_COMPRESSION: None
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
@@ -430,8 +435,8 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
-    "CATDESC"     CDF_CHAR     { "HERMES EEA azimuth sector index used in " -
-                                 "some types of outputs" }
+    "CATDESC"     CDF_CHAR     { "HERMES EEA azimuth sector index used " -
+                                 "in some types of outputs" }
     "FIELDNAM"    CDF_CHAR     { "HERMES/EEA sector index" }
     "FILLVAL"     CDF_INT1     { -128 }
     "FORMAT"      CDF_CHAR     { "I2.2" }
@@ -488,7 +493,7 @@
 ! --------          ----     --------  ----  -----  --------  ---------
 
   "hermes_eea_sector_label"
-                  CDF_CHAR      10       1     32       F         T
+                  CDF_CHAR      10       1     34       F         T
 
   ! VAR_COMPRESSION: None
   ! (Valid compression: None, GZIP.1-9, RLE.0, HUFF.0, AHUFF.0)
@@ -501,8 +506,8 @@
   ! Name            Type       Value
   ! --------        ----       -----
 
-    "CATDESC"     CDF_CHAR     { "HERMES/EEA azimuth sector label used in " -
-                                 "some types of outputs" }
+    "CATDESC"     CDF_CHAR     { "HERMES/EEA azimuth sector label used " -
+                                 "in some types of outputs" }
     "FIELDNAM"    CDF_CHAR     { "HERMES/EEA sector label" }
     "FORMAT"      CDF_CHAR     { "A11" }
     "LABLAXIS"    CDF_CHAR     { "hermes_eea_sector_label" }
@@ -547,5 +552,6 @@
     [32] = { "sector31  " }
     [33] = { "sector32  " }
     [34] = { "sector33  " }
+
 
 #end
