@@ -1,11 +1,14 @@
 """
 A module for all things calibration.
 """
+from datetime import datetime, timezone, timedelta
 import random
 import os.path
 from pathlib import Path
 
 import ccsdspy
+import numpy as np
+from spacepy import pycdf
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
@@ -71,24 +74,16 @@ def calibrate_file(data_filename: Path) -> Path:
     >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
     """
     log.info(f"Calibrating file:{data_filename}.")
-    output_filename = (
-        data_filename  # TODO: for testing, the output filename MUST NOT same as input
-    )
+    output_filename = data_filename  # TODO: for testing, the output filename MUST NOT same as input
     file_metadata = parse_science_filename(data_filename.name)
 
     # check if level 0 binary file, if so call appropriate functions
-    if (
-        file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l0"
-    ):
+    if file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l0":
         data = parse_l0_sci_packets(data_filename)
 
         level1_filename = l0_sci_data_to_cdf(data, data_filename)
         output_filename = level1_filename
-    elif (
-        file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l1"
-    ):
+    elif file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l1":
         # generate the quicklook data
         #
         # the following shows an example flow for calibrating a file
@@ -155,6 +150,25 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     return data
 
 
+def converting_ccsds_times_to_cdf(coarse, fine):
+
+    epoch = np.zeros(coarse.shape[0], dtype=np.uint)
+    p1 = np.zeros(coarse.shape[0], dtype=np.uint)
+    p2 = np.zeros(coarse.shape[0], dtype=np.uint)
+
+    tai_time = {}
+    tai_time["taiEpoch_tt2000"] = 1325419167816000000
+    tai_time["nanosPerMicro"] = 1000
+    tai_time["MicrosPerSec"] = 1000000
+    tai_time["nanosPerSec"] = 1000000000
+    example = coarse[0] * tai_time["nanosPerSec"]
+    p1 = np.int64(coarse) * np.int64(tai_time["nanosPerSec"])
+    p2 = np.int64(fine) * np.int64(tai_time["nanosPerMicro"])
+    epoch = p1 + p2
+    result = np.uint(epoch - tai_time["taiEpoch_tt2000"])
+    return result
+
+
 def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
@@ -183,16 +197,30 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
     """
     file_metadata = parse_science_filename(original_filename.name)
 
+    # coarse = data["SHCOARSE"][idx]
+    # fine = data["SHFINE"][idx]
+    # time = convert_packet_time_to_datetime(coarse, fine)
     cdf_filename = original_filename.parent / create_science_filename(
         file_metadata["instrument"],
         file_metadata["time"],
         "l1",
         f'1.0.{file_metadata["version"]}',
     )
+    if not cdf_filename.is_file():
+        cdf = pycdf.CDF(
+            str(cdf_filename),
+            os.path.join(
+                hermes_eea._data_directory,
+                "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
+            ),
+        )
+        cdf["Epoch"] = converting_ccsds_times_to_cdf(data["SHCOARSE"], data["SHFINE"])
+        cdf["hermes_eea_accumulations"] = data["ACCUM"]
+        cdf["hermes_eea_counter1"] = data["COUNTER1"]
+        cdf["hermes_eea_counter2"] = data["COUNTER2"]
+        cdf["hermes_eea_step_counter"] = data["STEP"]
 
-    # create an empty file for testing purposes
-    with open(cdf_filename, "w"):
-        pass
+        cdf.close()
 
     return cdf_filename
 
