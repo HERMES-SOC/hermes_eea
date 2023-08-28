@@ -29,7 +29,7 @@ classifiers = [
 ]
 dependencies = [
   'astropy>=4.1.0',
-  'numpy>=1.25.0',
+  'numpy>=1.16.0',
   'hermes_core @ git+https://github.com/HERMES-SOC/hermes_core/',
   'ccsdspy @ git+https://github.com/ddasilva/ccsdspy.git'
 ]
