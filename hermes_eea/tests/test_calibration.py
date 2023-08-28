@@ -5,7 +5,7 @@ from pathlib import Path
 import hermes_eea.calibration as calib
 from hermes_core.util.util import create_science_filename, parse_science_filename
 
-level0_filename = "hermes_EEA_l0_2022339T000000_v0.bin"
+level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
 level1_filename = "hermes_eea_l1_20221205T000000_v1.0.0.cdf"
 ql_filename = "hermes_eea_ql_20221205T000000_v1.0.0.cdf"
 
@@ -37,13 +37,13 @@ def test_l0_sci_data_to_cdf(level0_file):
 def test_calibrate_file_nofile_error():
     """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
     with pytest.raises(FileNotFoundError):
-        calib.calibrate_file(Path("hermes_EEA_l0_2032339T000000_v0.bin"))
+        calib.calibrate_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
 
 
 def test_process_file_nofile_error():
     """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
     with pytest.raises(FileNotFoundError):
-        calib.process_file(Path("hermes_EEA_l0_2032339T000000_v0.bin"))
+        calib.process_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
 
 
 def test_calibrate_file(level0_file, level1_file):
