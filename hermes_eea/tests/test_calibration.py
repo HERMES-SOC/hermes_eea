@@ -6,8 +6,8 @@ import hermes_eea.calibration as calib
 from hermes_core.util.util import create_science_filename, parse_science_filename
 
 level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
-level1_filename = "hermes_eea_l1_20221205_000000_v1.0.0.cdf"
-ql_filename = "hermes_eea_ql_20221205_000000_v1.0.0.cdf"
+level1_filename = "hermes_eea_l1_20221205T000000_v1.0.0.cdf"
+ql_filename = "hermes_eea_ql_20221205T000000_v1.0.0.cdf"
 
 
 @pytest.fixture(scope="session")
