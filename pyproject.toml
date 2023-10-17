@@ -12,7 +12,7 @@ dynamic = ["version"]
 authors = [{name = "Steven Christe", email="steven.d.christe@nasa.gov"},
            {name = "Damian Barrous Dumme", email="damianbarrous@gmail.com"}]
 license = {file = "LICENSE.rst"}
-requires-python = ">=3.7"
+requires-python = ">=3.9"
 keywords = ["hermes", "nasa mission", "space weather"]
 classifiers = [
     "Development Status :: 3 - Alpha",
