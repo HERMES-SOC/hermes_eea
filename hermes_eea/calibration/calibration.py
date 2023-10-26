@@ -1,25 +1,20 @@
 """
 A module for all things calibration.
 """
-import random
-import os.path
 from pathlib import Path
 
-import ccsdspy
+import astropy
 
-from hermes_core import log
-from hermes_core.util.util import create_science_filename, parse_science_filename
+from hermes_core.timedata import HermesData
 
+from hermes_eea import log
 import hermes_eea
-from hermes_eea.io import read_file
+from hermes_eea.io import load_data_file, read_calibration_file, write_data_file
 
 __all__ = [
     "process_file",
-    "parse_l0_sci_packets",
-    "l0_sci_data_to_cdf",
-    "calibrate_file",
+    "calibrate_data",
     "get_calibration_file",
-    "read_calibration_file",
 ]
 
 
@@ -41,8 +36,17 @@ def process_file(data_filename: Path) -> list:
     log.info(f"Processing file {data_filename}.")
     output_files = []
 
-    calibrated_file = calibrate_file(data_filename)
-    output_files.append(calibrated_file)
+    # Load the data file to a logical data format from its physical file format
+    instrument_data = load_data_file(data_filename)
+
+    # Calibrate the data file in its logical data format
+    calibrated_data = calibrate_data(instrument_data)
+
+    # Write the logical data format to a physical file format
+    calibrated_filename = write_data_file(calibrated_data)
+
+    # Add the calibrated filename to the list of returned files to the processing pipeline
+    output_files.append(calibrated_filename)
     #  data_plot_files = plot_file(data_filename)
     #  calib_plot_files = plot_file(calibrated_file)
 
@@ -50,192 +54,69 @@ def process_file(data_filename: Path) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path) -> Path:
+def calibrate_data(instrument_data: HermesData) -> HermesData:
     """
-    Given an input data file, raise it to the next level
-    (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
+    Given a data conainer with uncalibrated data from an input file, calibrate the data
+    and and return a data container of the calibrated data.
+
+    Function should calibrate and increase the data level by one-level. For example,
+    if the data container `instrument_data` contains L0 data, calibrate the data to L1
+    data. If the the `instrument_data` contains L1 data, calibrate the data to L2 data.
+
+    Calibrating from L0 -> L4 data requres multiple successive calls to the `calibrate_data`
+    function.
 
     Parameters
     ----------
-    data_filename: Path
-        Fully specificied filename of the input data file.
+    instrument_data: HermesData
+        A data container in a logical data format from a non-calibrated file
 
     Returns
     -------
-    output_filename: Path
-        Fully specificied filename of the output file.
+    output_data: HermesData
+        A data container in a logical data format to create a calibrated file
 
     Examples
     --------
-    >>> from hermes_eea.calibration import calibrate_file
-    >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
+    >>> from hermes_eea.io import load_data_file
+    >>> from hermes_eea.calibration import calibrate_data
+    >>> level_0_data = load_data_file('hermes_EEA_l0_2022239-000000_v0.bin') # doctest: +SKIP
+    >>> level_1_data = calibrate_data(level_0_data)  # doctest: +SKIP
     """
-    log.info(f"Calibrating file:{data_filename}.")
-    output_filename = (
-        data_filename  # TODO: for testing, the output filename MUST NOT same as input
-    )
-    file_metadata = parse_science_filename(data_filename.name)
 
-    # check if level 0 binary file, if so call appropriate functions
-    if (
-        file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l0"
-    ):
-        #  data = parse_l0_sci_packets(data_filename)
-        data = {}
-        # test opening the file
-        with open(data_filename, "r") as fp:
-            pass
-        level1_filename = l0_sci_data_to_cdf(data, data_filename)
-        output_filename = level1_filename
-    elif (
-        file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l1"
-    ):
-        # generate the quicklook data
-        #
-        # the following shows an example flow for calibrating a file
-        # data = read_file(data_filename)
-        # calib_file = get_calibration_file(data_filename)
-        # if calib_file is None:
-        #    raise ValueError(f"Calibration file for {data_filename} not found.")
-        # else:
-        #    calib_data = read_calibration_file(calib_file)
-
-        # test opening the file
-        with open(data_filename, "r") as fp:
-            pass
-
-        # now that you have your calibration data, you can calibrate the science data
-        ql_filename = data_filename.parent / create_science_filename(
-            file_metadata["instrument"],
-            file_metadata["time"],
-            "ql",
-            file_metadata["version"],
+    # Example loading a calibration file
+    calib_file = get_calibration_file(instrument_data)
+    if calib_file is None:
+        raise ValueError(
+            "Calibration file for {} not found.".format(
+                instrument_data.meta["Logical_file_id"]
+            )
         )
-
-        # write your cdf file below
-        # create an empty file for testing purposes
-        with open(data_filename.parent / ql_filename, "w"):
-            pass
-
-        # example log messages
-        log.info(f"Despiking removing {random.randint(0, 10)} spikes")
-        log.warning(f"Despiking could not remove {random.randint(1, 5)}")
-        output_filename = ql_filename
     else:
-        raise ValueError(f"The file {data_filename} is not recognized.")
+        calib_data = read_calibration_file(calib_file)
 
-    return output_filename
+    # Create output data
+    output_data = instrument_data  # NOTE : Template does not modify input data
 
-
-def parse_l0_sci_packets(data_filename: Path) -> dict:
-    """
-    Parse a level 0 eea binary file containing CCSDS packets.
-
-    Parameters
-    ----------
-    data_filename: str
-        Fully specificied filename
-
-    Returns
-    -------
-    result: dict
-        A dictionary of arrays which includes the ccsds header fields
-
-    Examples
-    --------
-    >>> import hermes_eea.calibration as calib
-    >>> data_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
-    >>> data = calib.parse_eea_sci_packets(data_filename)  # doctest: +SKIP
-    """
-    log.info(f"Parsing packets from file:{data_filename}.")
-
-    pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "EEA_sci_packet_def.csv")
-    )
-    data = pkt.load(data_filename)
-    return data
+    return output_data
 
 
-def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
-    """
-    Write level 0 eea science data to a level 1 cdf file.
-
-    Parameters
-    ----------
-    data: dict
-        A dictionary of arrays which includes the ccsds header fields
-    original_filename: Path
-        The Path to the originating file.
-
-    Returns
-    -------
-    output_filename: Path
-        Fully specificied filename of cdf file
-
-    Examples
-    --------
-    >>> from pathlib import Path
-    >>> from hermes_core.util.util import parse_science_filename
-    >>> import hermes_eea.calibration as calib
-    >>> data_filename = Path("hermes_EEA_l0_2022339-000000_v0.bin")
-    >>> metadata = parse_science_filename(data_filename)  # doctest: +SKIP
-    >>> data_packets = calib.parse_l0_sci_packets(data_filename)  # doctest: +SKIP
-    >>> cdf_filename = calib.l0_sci_data_to_cdf(data_packets, data_filename)  # doctest: +SKIP
-    """
-    file_metadata = parse_science_filename(original_filename.name)
-
-    cdf_filename = original_filename.parent / create_science_filename(
-        file_metadata["instrument"],
-        file_metadata["time"],
-        "l1",
-        f'1.0.{file_metadata["version"]}',
-    )
-
-    # create an empty file for testing purposes
-    with open(cdf_filename, "w"):
-        pass
-
-    return cdf_filename
-
-
-def get_calibration_file(data_filename: Path, time=None) -> Path:
+def get_calibration_file(
+    instrument_data: HermesData, time: astropy.time.Time = None
+) -> Path:
     """
     Given a time, return the appropriate calibration file.
 
     Parameters
     ----------
-    data_filename: str
-        Fully specificied filename of the non-calibrated file (data level < 2)
+    instrument_data: HermesData
+        A data container in a logical data format
     time: ~astropy.time.Time
 
     Returns
     -------
-    calib_filename: str
+    calib_filename: Path
         Fully specificied filename for the appropriate calibration file.
 
-    Examples
-    --------
-    """
-    return None
-
-
-def read_calibration_file(calib_filename: Path):
-    """
-    Given a calibration, return the calibration structure.
-
-    Parameters
-    ----------
-    calib_filename: str
-        Fully specificied filename of the non-calibrated file (data level < 2)
-
-    Returns
-    -------
-    output_filename: str
-        Fully specificied filename of the appropriate calibration file.
-
-    Examples
-    --------
     """
     return None

@@ -2,7 +2,6 @@
 import os.path
 
 from hermes_core import log
-from hermes_eea.io.file_tools import read_file
 
 try:
     from ._version import __version__
@@ -11,7 +10,7 @@ except ImportError:
     __version__ = "unknown"
     version_tuple = (0, 0, "unknown version")
 
-__all__ = ["log", "read_file"]
+__all__ = ["log"]
 
 INST_NAME = "eea"
 INST_SHORTNAME = "eea"

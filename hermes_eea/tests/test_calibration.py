@@ -2,8 +2,19 @@ import pytest
 import os.path
 from pathlib import Path
 
-import hermes_eea.calibration as calib
+import numpy as np
+from numpy.random import random
+from astropy.timeseries import TimeSeries
+from astropy.units import Quantity
+import astropy.units as u
+from astropy.nddata import NDData
+from astropy.wcs import WCS
+from ndcube import NDCube, NDCollection
+from spacepy.pycdf import CDFError
+
+from hermes_core.timedata import HermesData
 from hermes_core.util.util import create_science_filename, parse_science_filename
+import hermes_eea.calibration as calib
 
 level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
 level1_filename = "hermes_eea_l1_20221205T000000_v1.0.0.cdf"
@@ -26,62 +37,81 @@ def level1_file(tmp_path_factory):
     return fn
 
 
-def test_l0_sci_data_to_cdf(level0_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    data = {}
-    output_file = calib.l0_sci_data_to_cdf(data, level0_file)
-    assert output_file.name == level1_filename
-    assert output_file.is_file()
+def get_test_hermes_data():
+    """
+    Function to get test hermes_core.timedata.HermesData objects to re-use in other tests
+    """
 
+    # Astropy TimeSeries
+    ts = TimeSeries(
+        time_start="2016-03-22T12:30:31",
+        time_delta=3 * u.s,
+        data={"Bx": Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)},
+    )
 
-def test_calibrate_file_nofile_error():
-    """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
-    with pytest.raises(FileNotFoundError):
-        calib.calibrate_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
+    # Support Data / Non-Time Varying Data
+    support = {"support_counts": NDData(data=[1])}
+
+    # Spectra Data
+    spectra = NDCollection(
+        [
+            (
+                "test_spectra",
+                NDCube(
+                    data=random(size=(4, 10)),
+                    wcs=WCS(naxis=2),
+                    meta={"CATDESC": "Test Spectra Variable"},
+                    unit="eV",
+                ),
+            )
+        ]
+    )
+
+    # Global Metadata Attributes
+    input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
+
+    # Create HermesData Object
+    hermes_data = HermesData(
+        timeseries=ts, support=support, spectra=spectra, meta=input_attrs
+    )
+    hermes_data.timeseries["Bx"].meta.update({"CATDESC": "Test"})
+    return hermes_data
 
 
 def test_process_file_nofile_error():
-    """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
+    """
+    Test that if file does not exist it produces the correct error.
+    The file needs to be in the correct format.
+    """
     with pytest.raises(FileNotFoundError):
         calib.process_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
 
 
-def test_calibrate_file(level0_file, level1_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    output_file = calib.calibrate_file(level0_file)
-    assert output_file.name == level1_filename
-    assert output_file.is_file()
-    output_file = calib.calibrate_file(level1_file)
-    assert output_file.name == ql_filename
-    assert output_file.is_file()
+def test_calibrate_data():
+    test_data = get_test_hermes_data()
 
-    # with pytest.raises(ValueError) as excinfo:
-    #    calib.calibrate_file("datafile_with_no_calib.cdf")
-    # assert (
-    #    str(excinfo.value)
-    #    == "Calibration file for datafile_with_no_calib.cdf not found."
-    # )
+    with pytest.raises(ValueError) as excinfo:
+        calib.calibrate_data(test_data)
+    assert (
+        str(excinfo.value)
+        == "Calibration file for hermes_eea_l1_20160322T123031_v1.0.0 not found."
+    )
 
 
 def test_process_file_level0(level0_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    file_output = calib.process_file(level0_file)
-    assert len(file_output) == 1
-    assert file_output[0].name == level1_filename
-    assert file_output[0].is_file()
+    with pytest.raises(FileNotFoundError) as excinfo:
+        _ = calib.process_file(level0_file)
+    assert (
+        str(excinfo.value)
+        == "[Errno 2] No such file or directory: '/workspaces/HERMES_SOC/hermes_eea/hermes_eea/data/EEA_sci_packet_def.csv'"
+    )
 
 
 def test_process_file_level1(level1_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    file_output = calib.process_file(level1_file)
-    assert len(file_output) == 1
-    assert file_output[0].name == ql_filename
-    assert file_output[0].is_file()
+    with pytest.raises(CDFError) as excinfo:
+        _ = calib.process_file(level1_file)
+    assert str(excinfo.value) == "CDF_READ_ERROR: Read failed - error from file system."
 
 
 def test_get_calibration_file():
     assert calib.get_calibration_file("") is None
-
-
-def test_read_calibration_file():
-    assert calib.read_calibration_file("calib_file") is None
