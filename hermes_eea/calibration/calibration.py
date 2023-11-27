@@ -12,7 +12,6 @@ from spacepy import pycdf
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
-
 import hermes_eea
 from hermes_eea.io import read_file
 
@@ -79,8 +78,8 @@ def calibrate_file(data_filename: Path) -> Path:
 
     # check if level 0 binary file, if so call appropriate functions
     if file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l0":
+        # because of error handling, no test of data is necessary here.
         data = parse_l0_sci_packets(data_filename)
-
         level1_filename = l0_sci_data_to_cdf(data, data_filename)
         output_filename = level1_filename
     elif file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l1":
@@ -110,7 +109,9 @@ def calibrate_file(data_filename: Path) -> Path:
         # create an empty file for testing purposes
         with open(data_filename.parent / ql_filename, "w"):
             pass
-
+        # here
+        data = parse_l0_sci_packets(data_filename)
+        level1_filename = l0_sci_data_to_cdf(data, data_filename)
         # example log messages
         log.info(f"Despiking removing {random.randint(0, 10)} spikes")
         log.warning(f"Despiking could not remove {random.randint(1, 5)}")
@@ -195,6 +196,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
     >>> data_packets = calib.parse_l0_sci_packets(data_filename)  # doctest: +SKIP
     >>> cdf_filename = calib.l0_sci_data_to_cdf(data_packets, data_filename)  # doctest: +SKIP
     """
+
+    # this is transferring name.bin to name.cdf
     file_metadata = parse_science_filename(original_filename.name)
 
     # coarse = data["SHCOARSE"][idx]
@@ -214,6 +217,12 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
                 "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
             ),
         )
+        cdf.close()
+    if data:
+        cdf = pycdf.CDF(str(cdf_filename))
+        cdf.readonly(False)
+
+        # writes the data to the blank cdfd
         cdf["Epoch"] = converting_ccsds_times_to_cdf(data["SHCOARSE"], data["SHFINE"])
         cdf["hermes_eea_accumulations"] = data["ACCUM"]
         cdf["hermes_eea_counter1"] = data["COUNTER1"]
