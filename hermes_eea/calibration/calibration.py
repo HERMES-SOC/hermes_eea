@@ -14,6 +14,11 @@ from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
 import hermes_eea
 from hermes_eea.io import read_file
+import hermes_eea.calibration as calib
+from hermes_eea.io.EEA import EEA
+from hermes_eea.SkymapFactory import SkymapFactory
+from hermes_eea.Global_Attrs_Cnts import Global_Attrs
+from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_iso
 
 __all__ = [
     "process_file",
@@ -222,14 +227,22 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         cdf = pycdf.CDF(str(cdf_filename))
         cdf.readonly(False)
 
-        # writes the data to the blank cdfd
-        cdf["Epoch"] = converting_ccsds_times_to_cdf(data["SHCOARSE"], data["SHFINE"])
-        cdf["hermes_eea_accumulations"] = data["ACCUM"]
-        cdf["hermes_eea_counter1"] = data["COUNTER1"]
-        cdf["hermes_eea_counter2"] = data["COUNTER2"]
-        cdf["hermes_eea_step_counter"] = data["STEP"]
+        calibration_file = get_calibration_file(hermes_eea.stepper_table)
+        read_calibration_file(calibration_file)
 
-        cdf.close()
+        #eea_cdf = WriteEEACDF(file_metadata, data_filename, hermes_eea.skeleton)
+        glblattr = Global_Attrs(file_metadata['version'],
+                                                  cdf_filename.name, lo_ext=False)
+        myEEA = EEA(file_metadata)
+        # This populates so doesn't have to return much
+        SkymapFactory(data, calib.energies, calib.deflections, myEEA)
+        example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
+        range = [myEEA.Epoch[0], myEEA.Epoch[-1]]
+        range_of_packet = epoch_to_iso(range)
+        log.info("Range of file:" + range_of_packet[0] + " to " + range_of_packet[1])
+        n_packets = len(myEEA.Epoch)
+        #outputFile = eea_cdf.writeCDF(glblattr, myEEA, range, n_packets, srvy='normal')
+        #log.warning("Wrote CDF:" + outputFile)
 
     return cdf_filename
 
@@ -237,7 +250,6 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
 def get_calibration_file(data_filename: Path, time=None) -> Path:
     """
     Given a time, return the appropriate calibration file.
-
     Parameters
     ----------
     data_filename: str
@@ -252,7 +264,7 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Examples
     --------
     """
-    return None
+    return os.path.join(hermes_eea._data_directory, data_filename)
 
 
 def read_calibration_file(calib_filename: Path):
@@ -272,4 +284,9 @@ def read_calibration_file(calib_filename: Path):
     Examples
     --------
     """
-    return None
+    lines = read_file(os.path.join(calib_filename))
+    calib.energies = []
+    calib.deflections = []
+    for line in lines:
+        calib.energies.append(int(line[8:10], 16))
+        calib.deflections.append(int(line[10:12], 16))

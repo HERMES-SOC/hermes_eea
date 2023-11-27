@@ -24,7 +24,11 @@ def read_file(data_filename):
     Examples
     --------
     """
-    return None
+    try:
+       with open(data_filename) as fh:
+          return fh.readlines()
+    except Exception:
+        raise Exception("Could not find: " + data_filename)
 
 
 def read_ccsds(filename: str, pkt_def: FixedLength):
