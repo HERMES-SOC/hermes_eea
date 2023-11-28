@@ -260,8 +260,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         accumSkymaps = NDData( data=np.array(myEEA.ACCUM))
         epochs = NDData( data=np.array(myEEA.Epoch))
 
-        input_attrs= retrieve_canned_attributes()
-        #input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
+        #input_attrs= retrieve_canned_attributes()
+        input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
         ts = TimeSeries( time=iso_times )
         #'stats': u.Quantity(np.array(myEEA.stats), 'cm', dtype=np.uint16),
         support_data = {
@@ -269,16 +269,15 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
              'pulse_a'   : counterA,
              'pulse_b'   : counterB,
              'ACCUM'     : accumSkymaps
-
         }
         hermes_eea_data = HermesData(timeseries=ts, meta=input_attrs, support=support_data)
-        ts = TimeSeries(
+        ts2 = TimeSeries(
             time_start="2016-03-22T12:30:31",
             time_delta=3 * u.s,
             data={"Bx": u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
         )
         input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
-        hermes_data = HermesData(timeseries=ts, meta=input_attrs)
+        hermes_data = HermesData(timeseries=ts2, meta=input_attrs)
         hermes_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
         try:
 
