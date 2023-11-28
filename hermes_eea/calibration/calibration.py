@@ -271,11 +271,19 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
              'ACCUM'     : accumSkymaps
 
         }
-        hermes_data = HermesData(timeseries=ts, meta=input_attrs, support=support_data)
-
+        hermes_eea_data = HermesData(timeseries=ts, meta=input_attrs, support=support_data)
+        ts = TimeSeries(
+            time_start="2016-03-22T12:30:31",
+            time_delta=3 * u.s,
+            data={"Bx": u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
+        )
+        input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
+        hermes_data = HermesData(timeseries=ts, meta=input_attrs)
+        hermes_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
         try:
-            cdf_path = hermes_data.save(cdf_filename.parent, True)
-            #cdf_path = hermes_data.save( str(cdf_filename.parent) , True)
+
+            cdf_path = hermes_data.save(None, True)
+            cdf_path = hermes_eea_data.save( str(cdf_filename.parent) , True)
         except Exception as e:
             log.error(e)
             sys.exit(2)

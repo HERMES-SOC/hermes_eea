@@ -25,7 +25,7 @@ def SkymapFactory(l0_cdf,energies,deflections,myEEA):
     epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
     try:
         #for ptr in range(0,len(beginning_packets)):
-        for ptr in range(0,2000):
+        for ptr in range(77,100):
             #skymap = np.zeros((beginning_packets[ptr+1]-beginning_packets[ptr],32))
             package.append((
                 l0_cdf['STEP'][beginning_packets[ptr]:beginning_packets[ptr+1]],
