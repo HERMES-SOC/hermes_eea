@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 import random
 import os.path
 from pathlib import Path
-
+import sys
 import ccsdspy
 import numpy as np
 from spacepy import pycdf
@@ -23,6 +23,7 @@ import astropy.units as u
 from astropy.timeseries import TimeSeries
 from astropy.time import Time
 from hermes_core.timedata import HermesData
+from astropy.nddata import NDData
 
 __all__ = [
     "process_file",
@@ -253,17 +254,31 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         #          '1/(cm**2 * s * eV * steradian)',
         #          dtype=np.uint16)}
         #     )
+        energyLabels = NDData( data=np.array(myEEA.EnergyLabels))
+        counterA = NDData( data=np.array(myEEA.Counter1))
+        counterB = NDData( data=np.array(myEEA.Counter2))
+        accumSkymaps = NDData( data=np.array(myEEA.ACCUM))
+        epochs = NDData( data=np.array(myEEA.Epoch))
+
+        input_attrs= retrieve_canned_attributes()
+        #input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
         ts = TimeSeries( time=iso_times )
-        ts2 = TimeSeries(time=iso_times,
-              data={'diff_e_flux':
-                    u.Quantity(np.array(myEEA.stats), 'cm',
-                    dtype=np.uint16)}
-        )
-        ts3 = TimeSeries(time=iso_times,
-                     data={'diff_e_flux':
-                               u.Quantity(np.array(myEEA.EnergyLabels), 'cm',
-                                          dtype=np.uint16)}
-                     )
+        #'stats': u.Quantity(np.array(myEEA.stats), 'cm', dtype=np.uint16),
+        support_data = {
+             'energies'  : energyLabels,
+             'pulse_a'   : counterA,
+             'pulse_b'   : counterB,
+             'ACCUM'     : accumSkymaps
+
+        }
+        hermes_data = HermesData(timeseries=ts, meta=input_attrs, support=support_data)
+
+        try:
+            cdf_path = hermes_data.save(cdf_filename.parent, True)
+            #cdf_path = hermes_data.save( str(cdf_filename.parent) , True)
+        except Exception as e:
+            log.error(e)
+            sys.exit(2)
         ts4 = TimeSeries(time=iso_times,
                          data={
                              'energy_labels': u.Quantity(np.array(myEEA.EnergyLabels), 'cm', dtype=np.uint16),
@@ -271,43 +286,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
                              'step_counter_2': u.Quantity(np.array(np.array(myEEA.Counter2)), 'cm', dtype=np.uint16),
                               'accum': u.Quantity(np.array(np.array(myEEA.ACCUM)), 'cm', dtype=np.uint16)}
         )
-    input_attrs = {
-        "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
-        "Data_level": "L1>Level 1",  # NOT AN ISTP ATTR
-        "Data_version": "0.0.1",
-        "Descriptor": "EEA>Electron Electrostatic Analyzer",
-        "Data_product_descriptor": "odpd",
-        "HTTP_LINK": [
-            "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
-            "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
-            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html"
-        ],
-        "Instrument_mode": "default",  # NOT AN ISTP ATTR
-        "Instrument_type": "Electric Fields (space)",
-        "LINK_TEXT": [
-            "ISTP Guide",
-            "Global Attrs",
-            "Variable Attrs"
-        ],
-        "LINK_TITLE": [
-            "ISTP Guide",
-            "Global Attrs",
-            "Variable Attrs"
-        ],
-        "MODS": [
-            "v0.0.0 - Original version.",
-            "v1.0.0 - Include trajectory vectors and optics state.",
-            "v1.1.0 - Update metadata: counts -> flux.",
-            "v1.2.0 - Added flux error.",
-            "v1.3.0 - Trajectory vector errors are now deltas."
-        ],
-        "PI_affiliation": "HERMES",
-        "PI_name": "HERMES SOC",
-        "TEXT": "Valid Test Case",
-    }
 
 
-    hermes_eea_data = HermesData(timeseries=ts4, meta=input_attrs)
     return cdf_filename
 
 
@@ -354,3 +334,45 @@ def read_calibration_file(calib_filename: Path):
     for line in lines:
         calib.energies.append(int(line[8:10], 16))
         calib.deflections.append(int(line[10:12], 16))
+
+def retrieve_canned_attributes():
+    input_attrs = {
+        "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
+        "Data_level": "L1>Level 1",  # NOT AN ISTP ATTR
+        "Data_version": "0.0.1",
+        "Descriptor": "EEA>Electron Electrostatic Analyzer",
+        "Data_product_descriptor": "odpd",
+        "HTTP_LINK": [
+            "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
+            "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
+            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html"
+        ],
+        "Instrument_mode": "default",  # NOT AN ISTP ATTR
+        "Instrument_type": "Electric Fields (space)",
+        "LINK_TEXT": [
+            "ISTP Guide",
+            "Global Attrs",
+            "Variable Attrs"
+        ],
+        "LINK_TITLE": [
+            "ISTP Guide",
+            "Global Attrs",
+            "Variable Attrs"
+        ],
+        "MODS": [
+            "v0.0.0 - Original version.",
+            "v1.0.0 - Include trajectory vectors and optics state.",
+            "v1.1.0 - Update metadata: counts -> flux.",
+            "v1.2.0 - Added flux error.",
+            "v1.3.0 - Trajectory vector errors are now deltas."
+        ],
+        "PI_affiliation": "HERMES",
+        "PI_name": "HERMES SOC",
+        "TEXT": "Valid Test Case",
+        "VATTRS": [
+            "stats",
+            "energies"
+         ]
+    }
+
+    return input_attrs
