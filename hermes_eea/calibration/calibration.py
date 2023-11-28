@@ -20,7 +20,7 @@ from hermes_eea.SkymapFactory import SkymapFactory
 from hermes_eea.Global_Attrs_Cnts import Global_Attrs
 from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
 import astropy.units as u
-from astropy.timeseries import TimeSeries
+from astropy.timeseries import TimeSeries, BinnedTimeSeries
 from astropy.time import Time
 from hermes_core.timedata import HermesData
 from astropy.nddata import NDData
@@ -241,6 +241,7 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         myEEA = EEA(file_metadata)
         # This populates so doesn't have to return much
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
+        most_active = np.where(np.array(myEEA.stats) > 150)
         example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
         iso_times = Time(epoch_to_iso(myEEA.Epoch[:]), scale='utc')
         range = [myEEA.Epoch[0], myEEA.Epoch[-1]]
@@ -261,9 +262,9 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         epochs = NDData( data=np.array(myEEA.Epoch))
         stats = NDData( data=np.array(myEEA.stats))
 
-        #input_attrs= retrieve_canned_attributes()
-        input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
-        ts = TimeSeries( time=iso_times )
+        hard_coded_attrs= retrieve_canned_attributes()
+        bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
+        ts_justTime = TimeSeries( time=iso_times )
         #'stats': u.Quantity(np.array(myEEA.stats), 'cm', dtype=np.uint16),
         support_data = {
              'energies'  : energyLabels,
@@ -271,35 +272,44 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
              'pulse_b'   : counterB,
              'ACCUM'     : accumSkymaps
         }
-        hermes_eea_data = HermesData(timeseries=ts, meta=input_attrs, support=support_data)
-        ts3 = TimeSeries(
+        hermes_eea_data = HermesData(timeseries=ts_justTime, meta=bare_attrs, support=support_data)
+
+        ts_1d_uQ = TimeSeries(
+            time=iso_times,
+            data= {"Bx": u.Quantity(myEEA.stats, "gauss", dtype=np.uint16) }
+        ) # this works
+
+        ts_2d_uQ = TimeSeries(
             time=iso_times,
             data= {"Bx": u.Quantity(myEEA.stats, "gauss", dtype=np.uint16),
-                   "Cx": u.Quantity(myEEA.stats, "gauss", dtype=np.uint16)}
+                   "Cx": u.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16)}
         )
-        ts2 = TimeSeries(
-            time_start="2016-03-22T12:30:31",
-            time_delta=3 * u.s,
-            data={"Bx": u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
-        )
-        input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
-        hermes_data = HermesData(timeseries=ts3, meta=input_attrs)
-        hermes_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
-        hermes_data.timeseries['Cx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
-        try:
 
+        #ts4 = BinnedTimeSeries(time=iso_times, data={ "Cx": u.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16)}, n_bins=23)
+        ts2 = TimeSeries( time_start="2016-03-22T12:30:31", time_delta=3 * u.s,
+            data={"Bx": u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
+        ) # the 2D data looks fine inside of TimeSeries.Columns.Cx.array
+
+        try:
+           hermes_data = HermesData(timeseries=ts_1d_uQ, meta=hard_coded_attrs)
+        except ValueError:
+            log.error("ValueError: Column 'Cx' must be a one-dimensional measurement. Split additional dimensions into unique measurenents.")
+
+        # This seems to work to add it after the fact
+        hermes_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
+        try:
+            hermes_data.timeseries['Cx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
+        except KeyError:
+            log.error("Cx is only for ts_2d_uQ")
+
+        try:
+            # sep-rec version
             cdf_path = hermes_data.save(None, True)
+            # my all-in-one-rec-version
             cdf_path = hermes_eea_data.save( str(cdf_filename.parent) , True)
         except Exception as e:
             log.error(e)
             sys.exit(2)
-        ts4 = TimeSeries(time=iso_times,
-                         data={
-                             'energy_labels': u.Quantity(np.array(myEEA.EnergyLabels), 'cm', dtype=np.uint16),
-                             'step_counter_1': u.Quantity(np.array(np.array(myEEA.Counter1)), 'cm', dtype=np.uint16),
-                             'step_counter_2': u.Quantity(np.array(np.array(myEEA.Counter2)), 'cm', dtype=np.uint16),
-                              'accum': u.Quantity(np.array(np.array(myEEA.ACCUM)), 'cm', dtype=np.uint16)}
-        )
 
 
     return cdf_filename

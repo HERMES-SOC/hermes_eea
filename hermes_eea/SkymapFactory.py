@@ -21,11 +21,11 @@ def SkymapFactory(l0_cdf,energies,deflections,myEEA):
     return_package = {}
     beginning_packets = np.where((l0_cdf['STEP'][stepper_table_packets[0]:]) == 0 )[0] + stepper_table_packets[0]
     package = []
-
+    log.info("n_sweeps:" + str(len(beginning_packets)))
     epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
     try:
         #for ptr in range(0,len(beginning_packets)):
-        for ptr in range(77,100):
+        for ptr in range(87,200):
             #skymap = np.zeros((beginning_packets[ptr+1]-beginning_packets[ptr],32))
             package.append((
                 l0_cdf['STEP'][beginning_packets[ptr]:beginning_packets[ptr+1]],

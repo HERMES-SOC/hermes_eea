@@ -32,7 +32,10 @@ def converting_ccsds_times_to_cdf(coarse, fine):
     p2 = np.zeros(coarse.shape[0], dtype=np.uint)
 
     tai_time = {}
-    tai_time["taiEpoch_tt2000"] = 1325419167816000000
+    # FPI:
+    # tai_time["taiEpoch_tt2000"] = 1325419167816000000
+    # EEA:
+    tai_time["taiEpoch_tt2000"] = -64184000000
     tai_time["nanosPerMicro"] = 1000
     tai_time["MicrosPerSec"] = 1000000
     tai_time["nanosPerSec"] = 1000000000
@@ -47,7 +50,10 @@ def converting_ccsds_times_to_cdf(coarse, fine):
 def reverse_cnv_cdf_times_to_ccsds(epoch):
 
     tai_time = {}
-    tai_time["taiEpoch_tt2000"] = 1325419167816000000
+    # FPI:
+    # tai_time["taiEpoch_tt2000"] = 1325419167816000000
+    # EEA:
+    tai_time["taiEpoch_tt2000"] = -64184000000
     tai_time["nanosPerMicro"] = 1000
     tai_time["MicrosPerSec"] = 1000000
     tai_time["nanosPerSec"] = 1000000000
