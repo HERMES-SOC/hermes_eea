@@ -34,6 +34,27 @@ def test_read_calibration_file():
     assert len(calib.energies) == 164
     assert len(calib.deflections) == 164
 
+def test_HermesData1():
+    import numpy as np
+    import astropy.units as u
+    from astropy.timeseries import TimeSeries
+    from astropy.time import Time, TimeDelta
+    ts = TimeSeries(time_start='2016-03-22T12:30:31',
+                    time_delta=3 * u.s,
+                    data={'Bx': u.Quantity([1, 2, 3, 4],
+                          'nanoTesla',
+                          dtype=np.uint16)})
+    for item in ts.columns['time']:
+        print(item)
+    times = Time('2010-01-01 00:00:00', scale='utc') + TimeDelta(np.arange(100) * u.s)
+    ts = TimeSeries(
+           time=times,
+           data={'diff_e_flux': u.Quantity(np.arange(100) * 1e-3,
+                 '1/(cm**2 * s * eV * steradian)',
+           dtype=np.float32)}
+         )
+
+
 def test_calibrate_file(level0_file, level1_file):
     """Test that the output filenames are correct and that a file was actually created."""
     output_file = calib.calibrate_file(level0_file)

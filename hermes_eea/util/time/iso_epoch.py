@@ -102,6 +102,20 @@ def epoch_to_iso(trange):
         in_iso.append(c)
     return in_iso
 
+def epoch_to_eea_iso(trange):
+    """
+    CDF EPOCH TO ISO:
+    cdflib.epochs.CDFepoch.encode_tt2000(378651727184000000)
+
+    :param trange:18 digit CDF epoch times
+    :return:a list,typically 2, of datetime strings in iso format
+    """
+    in_iso = []
+    for t in trange:
+        c = cdflib.epochs.CDFepoch.encode_tt2000(int(t))
+        in_iso.append((c.replace("T"," ")[0:19]))
+    return in_iso
+
 def epoch_to_iso_obj(trange):
     """
     CDF EPOCH TO ISO:

@@ -18,7 +18,11 @@ import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 from hermes_eea.Global_Attrs_Cnts import Global_Attrs
-from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_iso
+from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
+import astropy.units as u
+from astropy.timeseries import TimeSeries
+from astropy.time import Time
+from hermes_core.timedata import HermesData
 
 __all__ = [
     "process_file",
@@ -237,13 +241,73 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         # This populates so doesn't have to return much
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
         example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
+        iso_times = Time(epoch_to_iso(myEEA.Epoch[:]), scale='utc')
         range = [myEEA.Epoch[0], myEEA.Epoch[-1]]
         range_of_packet = epoch_to_iso(range)
         log.info("Range of file:" + range_of_packet[0] + " to " + range_of_packet[1])
         n_packets = len(myEEA.Epoch)
         #outputFile = eea_cdf.writeCDF(glblattr, myEEA, range, n_packets, srvy='normal')
-        #log.warning("Wrote CDF:" + outputFile)
+        #ts = TimeSeries(
+        #      time=times,
+        #      data={'diff_e_flux': u.Quantity(myEAA.stats,
+        #          '1/(cm**2 * s * eV * steradian)',
+        #          dtype=np.uint16)}
+        #     )
+        ts = TimeSeries( time=iso_times )
+        ts2 = TimeSeries(time=iso_times,
+              data={'diff_e_flux':
+                    u.Quantity(np.array(myEEA.stats), 'cm',
+                    dtype=np.uint16)}
+        )
+        ts3 = TimeSeries(time=iso_times,
+                     data={'diff_e_flux':
+                               u.Quantity(np.array(myEEA.EnergyLabels), 'cm',
+                                          dtype=np.uint16)}
+                     )
+        ts4 = TimeSeries(time=iso_times,
+                         data={
+                             'energy_labels': u.Quantity(np.array(myEEA.EnergyLabels), 'cm', dtype=np.uint16),
+                             'step_counter_1': u.Quantity(np.array(np.array(myEEA.Counter1)), 'cm', dtype=np.uint16),
+                             'step_counter_2': u.Quantity(np.array(np.array(myEEA.Counter2)), 'cm', dtype=np.uint16),
+                              'accum': u.Quantity(np.array(np.array(myEEA.ACCUM)), 'cm', dtype=np.uint16)}
+        )
+    input_attrs = {
+        "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
+        "Data_level": "L1>Level 1",  # NOT AN ISTP ATTR
+        "Data_version": "0.0.1",
+        "Descriptor": "EEA>Electron Electrostatic Analyzer",
+        "Data_product_descriptor": "odpd",
+        "HTTP_LINK": [
+            "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
+            "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
+            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html"
+        ],
+        "Instrument_mode": "default",  # NOT AN ISTP ATTR
+        "Instrument_type": "Electric Fields (space)",
+        "LINK_TEXT": [
+            "ISTP Guide",
+            "Global Attrs",
+            "Variable Attrs"
+        ],
+        "LINK_TITLE": [
+            "ISTP Guide",
+            "Global Attrs",
+            "Variable Attrs"
+        ],
+        "MODS": [
+            "v0.0.0 - Original version.",
+            "v1.0.0 - Include trajectory vectors and optics state.",
+            "v1.1.0 - Update metadata: counts -> flux.",
+            "v1.2.0 - Added flux error.",
+            "v1.3.0 - Trajectory vector errors are now deltas."
+        ],
+        "PI_affiliation": "HERMES",
+        "PI_name": "HERMES SOC",
+        "TEXT": "Valid Test Case",
+    }
 
+
+    hermes_eea_data = HermesData(timeseries=ts4, meta=input_attrs)
     return cdf_filename
 
 

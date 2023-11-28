@@ -25,7 +25,7 @@ def SkymapFactory(l0_cdf,energies,deflections,myEEA):
     epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
     try:
         #for ptr in range(0,len(beginning_packets)):
-        for ptr in range(0, 7000):
+        for ptr in range(0, 2000):
             #skymap = np.zeros((beginning_packets[ptr+1]-beginning_packets[ptr],32))
             package.append((
                 l0_cdf['STEP'][beginning_packets[ptr]:beginning_packets[ptr+1]],
@@ -64,13 +64,13 @@ def do_eea_packet( stepperTableCounter,
      # skymap is already full of zeros, why do it again?
      # skymap = np.zeros((beginning_packets[ptr+1]-beginning_packets[ptr],32))
      skymaps = []
-     pulse_a = np.zeros((41,4))
-     pulse_b = np.zeros((41,4))
-     counter1 = np.zeros((41,4))
-     counter2 = np.zeros((41,4))
-     µepoch   = np.zeros((41,4))
+     pulse_a = np.zeros((41,4), dtype=np.uint16)
+     pulse_b = np.zeros((41,4), dtype=np.uint16)
+     counter1 = np.zeros((41,4), dtype=np.uint16)
+     counter2 = np.zeros((41,4), dtype=np.uint16)
+     µepoch   = np.zeros((41,4), dtype=np.uint16)
 
-     skymap = np.zeros((41, 4, 32))
+     skymap = np.zeros((41, 4, 32), dtype=np.uint16)
 
      for row in stepperTableCounter:
          dim0 = energies[row]
