@@ -24,6 +24,8 @@ from astropy.timeseries import TimeSeries, BinnedTimeSeries
 from astropy.time import Time
 from hermes_core.timedata import HermesData
 from astropy.nddata import NDData
+from ndcube import NDCube, NDCollection
+from astropy.wcs import WCS
 
 __all__ = [
     "process_file",
@@ -272,45 +274,28 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
              'pulse_b'   : counterB,
              'ACCUM'     : accumSkymaps
         }
-        hermes_eea_data = HermesData(timeseries=ts_justTime, meta=bare_attrs, support=support_data)
+        spectra_EnergyLabels = NDCollection( [ ( "example_spectra",
+            NDCube( data = np.array(myEEA.EnergyLabels),
+                    wcs = WCS(naxis=2),
+                    meta = {"CATDESC": "Example Spectra Variable"},
+                    unit = "eV",
+                   ),
+                 )])
 
         ts_1d_uQ = TimeSeries(
             time=iso_times,
             data= {"Bx": astropy_units.Quantity(myEEA.stats, "gauss", dtype=np.uint16) }
         ) # this works
-
-        # binned ?
-        binned = []
-        for n in range(0, len(myEEA.EnergyLabels)):
-            binned.append(myEEA.EnergyLabels[n])
-
         ts_2d_uQ = TimeSeries(
-            time=iso_times[0:2],
-            data= {"Bx": astropy_units.Quantity([1,3], "gauss", dtype=np.uint16),
-                   "Cx": astropy_units.Quantity([([1., 2., 3.], [.1, .2, .3]), ([4., 5., 6.], [.4, .5, .6])], 'gauss',
-                     dtype = np.uint16)}
-            )
+            time=iso_times,
+            data= {"Bx": astropy_units.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16) }
+        ) # this works
+        hermes_eea_data = HermesData(timeseries=ts_1d_uQ, spectra=spectra_EnergyLabels, meta=bare_attrs)
 
-        #ts4 = BinnedTimeSeries(time=iso_times, data={ "Cx": u.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16)}, n_bins=23)
-        ts2 = TimeSeries( time_start="2016-03-22T12:30:31", time_delta=3 * astropy_units.s,
-            data={"Bx": astropy_units.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
-        ) # the 2D data looks fine inside of TimeSeries.Columns.Cx.array
 
+        # This seems to work to add it after the facthhhhhhhhh
+        hermes_eea_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
         try:
-           hermes_data = HermesData(timeseries=ts_2d_uQ, meta=bare_attrs)
-        except ValueError as e:
-            log.error(e)
-
-        # This seems to work to add it after the fact
-        hermes_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
-        try:
-            hermes_data.timeseries['Cx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
-        except KeyError:
-            log.error("Cx is only for ts_2d_uQ")
-
-        try:
-            # sep-rec version
-            cdf_path = hermes_data.save(None, True)
             # my all-in-one-rec-version
             cdf_path = hermes_eea_data.save( str(cdf_filename.parent) , True)
         except Exception as e:
