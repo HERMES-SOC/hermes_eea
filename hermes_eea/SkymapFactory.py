@@ -3,7 +3,7 @@ import numpy as np
 from hermes_core import log
 from hermes_eea.io import EEA
 from hermes_eea.util.time import ccsds_to_cdf_time
-
+from hermes_eea import energies as voltages
 
 # This may eventually be put inside a multiprocessor:
 def SkymapFactory(l0_cdf,energies,deflections,myEEA):
@@ -21,12 +21,10 @@ def SkymapFactory(l0_cdf,energies,deflections,myEEA):
     return_package = {}
     beginning_packets = np.where((l0_cdf['STEP'][stepper_table_packets[0]:]) == 0 )[0] + stepper_table_packets[0]
     package = []
-    log.info("n_sweeps:" + str(len(beginning_packets)))
+
     epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
     try:
-        #for ptr in range(0,len(beginning_packets)):
-        for ptr in range(87,200):
-            #skymap = np.zeros((beginning_packets[ptr+1]-beginning_packets[ptr],32))
+        for ptr in range(0,len(beginning_packets)):
             package.append((
                 l0_cdf['STEP'][beginning_packets[ptr]:beginning_packets[ptr+1]],
                 l0_cdf['ACCUM'][beginning_packets[ptr]:beginning_packets[ptr+1]],
@@ -94,7 +92,7 @@ def do_eea_packet( stepperTableCounter,
      return_package['µEpoch']  = µepoch
      return_package['Epoch']  =  epoch[0]
      return_package['stats']  =  np.sum(skymap)
-     return_package['energies']  =  energies
+     return_package['energies']  =  voltages
      return_package['sun_angles']  = deflections
      return_package['counter1'] = counter1
      return_package['counter2'] = counter2

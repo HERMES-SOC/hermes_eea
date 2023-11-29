@@ -19,13 +19,9 @@ from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 from hermes_eea.Global_Attrs_Cnts import Global_Attrs
 from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
-import astropy.units as astropy_units
-from astropy.timeseries import TimeSeries, BinnedTimeSeries
-from astropy.time import Time
-from hermes_core.timedata import HermesData
-from astropy.nddata import NDData
-from ndcube import NDCube, NDCollection
-from astropy.wcs import WCS
+
+
+from hermes_eea.calibration.build_spectra import Build_Hermes_EEA_Data
 
 __all__ = [
     "process_file",
@@ -245,67 +241,19 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
         most_active = np.where(np.array(myEEA.stats) > 150)
         example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
-        iso_times = Time(epoch_to_iso(myEEA.Epoch[:]), scale='utc')
-        myrange = [myEEA.Epoch[0], myEEA.Epoch[-1]]
-        range_of_packet = epoch_to_iso(myrange)
-        log.info("Range of file:" + range_of_packet[0] + " to " + range_of_packet[1])
+
         n_packets = len(myEEA.Epoch)
-        #outputFile = eea_cdf.writeCDF(glblattr, myEEA, range, n_packets, srvy='normal')
-        #ts = TimeSeries(
-        #      time=times,
-        #      data={'diff_e_flux': u.Quantity(myEAA.stats,
-        #          '1/(cm**2 * s * eV * steradian)',
-        #          dtype=np.uint16)}
-        #     )
-        energyLabels = NDData( data=np.array(myEEA.EnergyLabels))
-        counterA = NDData( data=np.array(myEEA.Counter1))
-        counterB = NDData( data=np.array(myEEA.Counter2))
-        accumSkymaps = NDData( data=np.array(myEEA.ACCUM))
-        epochs = NDData( data=np.array(myEEA.Epoch))
-        stats = NDData( data=np.array(myEEA.stats))
 
-        hard_coded_attrs= retrieve_canned_attributes()
-        bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
-        ts_justTime = TimeSeries( time=iso_times )
-        #'stats': u.Quantity(np.array(myEEA.stats), 'cm', dtype=np.uint16),
-        support_data = {
-             'energies'  : energyLabels,
-             'pulse_a'   : counterA,
-             'pulse_b'   : counterB,
-             'ACCUM'     : accumSkymaps
-        }
-        multiple_spectra = NDCollection(
-            [
-        ( "example_2d_spectra",
-          NDCube( data = np.array(myEEA.EnergyLabels), wcs = WCS(naxis=2), meta = {"CATDESC": "Example 2D Spectra Variable"},
-                  unit = "eV", )),
-          ("example_3d_spectra",
-           NDCube(data=np.array(myEEA.ACCUM), wcs=WCS(naxis=3), meta={"CATDESC": "Example 3D Spectra Variable"},
-                  unit="eV", ))
-            ])
+        hermes_eea_factory = Build_Hermes_EEA_Data(myEEA)
+        hermes_eea_factory.build_HermesData()
 
-        ts_1d_uQ = TimeSeries(
-            time=iso_times,
-            data= {"Bx": astropy_units.Quantity(myEEA.stats, "gauss", dtype=np.uint16) }
-        ) # this works
-        ts_2d_uQ = TimeSeries(
-            time=iso_times,
-            data= {"Bx": astropy_units.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16) }
-        ) # this works
-        hermes_eea_data = HermesData(timeseries=ts_1d_uQ, spectra=multiple_spectra, meta=bare_attrs)
-
-
-        # This seems to work to add it after the facthhhhhhhhh
-        hermes_eea_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
         try:
-            # my all-in-one-rec-version
-            cdf_path = hermes_eea_data.save( str(cdf_filename.parent) , True)
+            cdf_path = hermes_eea_factory.hermes_eea_data.save( str(cdf_filename.parent) , True)
         except Exception as e:
             log.error(e)
             sys.exit(2)
 
-
-    return cdf_filename
+    return cdf_path
 
 
 def get_calibration_file(data_filename: Path, time=None) -> Path:
