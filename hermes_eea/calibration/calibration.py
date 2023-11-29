@@ -19,7 +19,7 @@ from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 from hermes_eea.Global_Attrs_Cnts import Global_Attrs
 from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
-import astropy.units as u
+import astropy.units as astropy_units
 from astropy.timeseries import TimeSeries, BinnedTimeSeries
 from astropy.time import Time
 from hermes_core.timedata import HermesData
@@ -244,8 +244,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         most_active = np.where(np.array(myEEA.stats) > 150)
         example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
         iso_times = Time(epoch_to_iso(myEEA.Epoch[:]), scale='utc')
-        range = [myEEA.Epoch[0], myEEA.Epoch[-1]]
-        range_of_packet = epoch_to_iso(range)
+        myrange = [myEEA.Epoch[0], myEEA.Epoch[-1]]
+        range_of_packet = epoch_to_iso(myrange)
         log.info("Range of file:" + range_of_packet[0] + " to " + range_of_packet[1])
         n_packets = len(myEEA.Epoch)
         #outputFile = eea_cdf.writeCDF(glblattr, myEEA, range, n_packets, srvy='normal')
@@ -276,24 +276,30 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
 
         ts_1d_uQ = TimeSeries(
             time=iso_times,
-            data= {"Bx": u.Quantity(myEEA.stats, "gauss", dtype=np.uint16) }
+            data= {"Bx": astropy_units.Quantity(myEEA.stats, "gauss", dtype=np.uint16) }
         ) # this works
 
+        # binned ?
+        binned = []
+        for n in range(0, len(myEEA.EnergyLabels)):
+            binned.append(myEEA.EnergyLabels[n])
+
         ts_2d_uQ = TimeSeries(
-            time=iso_times,
-            data= {"Bx": u.Quantity(myEEA.stats, "gauss", dtype=np.uint16),
-                   "Cx": u.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16)}
-        )
+            time=iso_times[0:2],
+            data= {"Bx": astropy_units.Quantity([1,3], "gauss", dtype=np.uint16),
+                   "Cx": astropy_units.Quantity([([1., 2., 3.], [.1, .2, .3]), ([4., 5., 6.], [.4, .5, .6])], 'gauss',
+                     dtype = np.uint16)}
+            )
 
         #ts4 = BinnedTimeSeries(time=iso_times, data={ "Cx": u.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16)}, n_bins=23)
-        ts2 = TimeSeries( time_start="2016-03-22T12:30:31", time_delta=3 * u.s,
-            data={"Bx": u.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
+        ts2 = TimeSeries( time_start="2016-03-22T12:30:31", time_delta=3 * astropy_units.s,
+            data={"Bx": astropy_units.Quantity([1, 2, 3, 4], "gauss", dtype=np.uint16)}
         ) # the 2D data looks fine inside of TimeSeries.Columns.Cx.array
 
         try:
-           hermes_data = HermesData(timeseries=ts_1d_uQ, meta=hard_coded_attrs)
-        except ValueError:
-            log.error("ValueError: Column 'Cx' must be a one-dimensional measurement. Split additional dimensions into unique measurenents.")
+           hermes_data = HermesData(timeseries=ts_2d_uQ, meta=bare_attrs)
+        except ValueError as e:
+            log.error(e)
 
         # This seems to work to add it after the fact
         hermes_data.timeseries['Bx'].meta.update({"CATDESC": "X component of the Magnetic field measured by HERMES"})
