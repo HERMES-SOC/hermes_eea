@@ -274,13 +274,15 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
              'pulse_b'   : counterB,
              'ACCUM'     : accumSkymaps
         }
-        spectra_EnergyLabels = NDCollection( [ ( "example_spectra",
-            NDCube( data = np.array(myEEA.EnergyLabels),
-                    wcs = WCS(naxis=2),
-                    meta = {"CATDESC": "Example Spectra Variable"},
-                    unit = "eV",
-                   ),
-                 )])
+        multiple_spectra = NDCollection(
+            [
+        ( "example_2d_spectra",
+          NDCube( data = np.array(myEEA.EnergyLabels), wcs = WCS(naxis=2), meta = {"CATDESC": "Example 2D Spectra Variable"},
+                  unit = "eV", )),
+          ("example_3d_spectra",
+           NDCube(data=np.array(myEEA.ACCUM), wcs=WCS(naxis=3), meta={"CATDESC": "Example 3D Spectra Variable"},
+                  unit="eV", ))
+            ])
 
         ts_1d_uQ = TimeSeries(
             time=iso_times,
@@ -290,7 +292,7 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
             time=iso_times,
             data= {"Bx": astropy_units.Quantity(myEEA.EnergyLabels, "gauss", dtype=np.uint16) }
         ) # this works
-        hermes_eea_data = HermesData(timeseries=ts_1d_uQ, spectra=spectra_EnergyLabels, meta=bare_attrs)
+        hermes_eea_data = HermesData(timeseries=ts_1d_uQ, spectra=multiple_spectra, meta=bare_attrs)
 
 
         # This seems to work to add it after the facthhhhhhhhh
