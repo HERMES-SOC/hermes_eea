@@ -119,10 +119,6 @@ def calibrate_file(data_filename: Path) -> Path:
             pass
         # here
         data = parse_l0_sci_packets(data_filename)
-        level1_filename = l0_sci_data_to_cdf(data, data_filename)
-        # example log messages
-        log.info(f"Despiking removing {random.randint(0, 10)} spikes")
-        log.warning(f"Despiking could not remove {random.randint(1, 5)}")
         output_filename = ql_filename
     else:
         raise ValueError(f"The file {data_filename} is not recognized.")
@@ -160,13 +156,16 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
 
 
 def converting_ccsds_times_to_cdf(coarse, fine):
-
+    """
+    Liam was using this in his initial endeavors
+    I am not sure if any tests are still using it
+    """
     epoch = np.zeros(coarse.shape[0], dtype=np.uint)
     p1 = np.zeros(coarse.shape[0], dtype=np.uint)
     p2 = np.zeros(coarse.shape[0], dtype=np.uint)
 
     tai_time = {}
-    tai_time["taiEpoch_tt2000"] = 1325419167816000000
+    tai_time["taiEpoch_tt2000"] = 64184000000
     tai_time["nanosPerMicro"] = 1000
     tai_time["MicrosPerSec"] = 1000000
     tai_time["nanosPerSec"] = 1000000000
@@ -174,7 +173,7 @@ def converting_ccsds_times_to_cdf(coarse, fine):
     p1 = np.int64(coarse) * np.int64(tai_time["nanosPerSec"])
     p2 = np.int64(fine) * np.int64(tai_time["nanosPerMicro"])
     epoch = p1 + p2
-    result = np.uint(epoch - tai_time["taiEpoch_tt2000"])
+    result = np.uint(epoch + tai_time["taiEpoch_tt2000"])
     return result
 
 
