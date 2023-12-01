@@ -50,11 +50,11 @@ def process_file(data_filename: Path) -> list:
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
-
-    calibrated_file = calibrate_file(data_filename)
-    output_files.append(calibrated_file)
-    #  data_plot_files = plot_file(data_filename)
-    #  calib_plot_files = plot_file(calibrated_file)
+    for filename in data_filename:
+        calibrated_file = calibrate_file(filename)
+        output_files.append(calibrated_file)
+        #  data_plot_files = plot_file(data_filename)
+        #  calib_plot_files = plot_file(calibrated_file)
 
     # add other tasks below
     return output_files
