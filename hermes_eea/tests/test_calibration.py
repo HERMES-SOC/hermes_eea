@@ -5,6 +5,7 @@ import ccsdspy
 import hermes_eea.calibration as calib
 from hermes_eea import _data_directory,stepper_table
 from hermes_core.util.util import create_science_filename, parse_science_filename
+import sys
 
 level1a_filename = "hermes_eea_l1_20221205_000000_v1.0.0.cdf"
 level1_filename  = 'hermes_eea_l1_20000101T124114_v1.0.0.cdf'

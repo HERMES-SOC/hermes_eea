@@ -1,6 +1,7 @@
 # Licensed under Apache License v2 - see LICENSE.rst
 import os.path
-
+import sys
+sys.path.append(os.getcwd())
 from hermes_core import log
 from hermes_eea.io.file_tools import read_file
 
