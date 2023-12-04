@@ -73,12 +73,12 @@ jobs:
         set JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
         # Run tests
-        pytest --pyargs hermes_core --cov hermes_core
+        pytest --pyargs hermes_eea --cov hermes_eea
       # Skip Windows Python 3.11 tests until SpacePy is updated
       if: ${{(matrix.platform == 'windows-latest' && matrix.python-version != '3.11')}}
 
     - name: Run tests on Ubuntu and MacOS
-      run: pytest --pyargs hermes_core --cov hermes_core
+      run: pytest --pyargs hermes_eea --cov hermes_eea
       env:
         PLATFORM: ${{ matrix.platform }}
       if: ${{ !(matrix.platform == 'windows-latest') }}
