@@ -28,11 +28,8 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-  'numpy>=1.18.0',
-  'sunpy>=5.0.1',
-  'spacepy>=0.4.1',
-  'ndcube>=2.1.3',
-  'pyyaml>=5.3.1',
+  'hermes_core @ git+https://github.com/HERMES-SOC/hermes_core/',
+  'ccsdspy @ git+https://github.com/ddasilva/ccsdspy.git'
 ]
 
 [project.optional-dependencies]
