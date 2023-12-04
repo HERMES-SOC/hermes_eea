@@ -12,6 +12,7 @@ from spacepy.pycdf import CDFError
 
 from hermes_core.timedata import HermesData
 from hermes_core.util.util import create_science_filename, parse_science_filename
+import hermes_eea
 import hermes_eea.calibration as calib
 
 level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
@@ -82,10 +83,8 @@ def test_calibrate_data():
 def test_process_file_level0(level0_file):
     with pytest.raises(FileNotFoundError) as excinfo:
         _ = calib.process_file(level0_file)
-    assert (
-        str(excinfo.value)
-        == "[Errno 2] No such file or directory: '/workspaces/HERMES_SOC/hermes_eea/hermes_eea/data/EEA_sci_packet_def.csv'"
-    )
+    csv_path = os.path.join(hermes_eea._data_directory, "EEA_sci_packet_def.csv")
+    assert str(excinfo.value) == f"[Errno 2] No such file or directory: '{csv_path}'"
 
 
 def test_process_file_level1(level1_file):
