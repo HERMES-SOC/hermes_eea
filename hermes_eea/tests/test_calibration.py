@@ -52,28 +52,11 @@ def get_test_hermes_data():
     # Support Data / Non-Time Varying Data
     support = {"support_counts": NDData(data=[1])}
 
-    # Spectra Data
-    spectra = NDCollection(
-        [
-            (
-                "test_spectra",
-                NDCube(
-                    data=random(size=(4, 10)),
-                    wcs=WCS(naxis=2),
-                    meta={"CATDESC": "Test Spectra Variable"},
-                    unit="eV",
-                ),
-            )
-        ]
-    )
-
     # Global Metadata Attributes
     input_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
 
     # Create HermesData Object
-    hermes_data = HermesData(
-        timeseries=ts, support=support, spectra=spectra, meta=input_attrs
-    )
+    hermes_data = HermesData(timeseries=ts, support=support, meta=input_attrs)
     hermes_data.timeseries["Bx"].meta.update({"CATDESC": "Test"})
     return hermes_data
 
