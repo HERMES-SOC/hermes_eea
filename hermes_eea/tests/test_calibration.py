@@ -8,8 +8,6 @@ from astropy.timeseries import TimeSeries
 from astropy.units import Quantity
 import astropy.units as u
 from astropy.nddata import NDData
-from astropy.wcs import WCS
-from ndcube import NDCube, NDCollection
 from spacepy.pycdf import CDFError
 
 from hermes_core.timedata import HermesData
