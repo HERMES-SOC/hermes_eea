@@ -74,7 +74,7 @@ def parse_l0_sci_packets(data_filename: Path) -> HermesData:
     --------
     >>> import hermes_eea.calibration as calib
     >>> data_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
-    >>> data = calib.parse_eea_sci_packets(data_filename)  # doctest: +SKIP
+    >>> data = calib.parse_l0_sci_packets(data_filename)  # doctest: +SKIP
     """
     log.info(f"Parsing packets from file:{data_filename}.")
 

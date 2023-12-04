@@ -11,8 +11,6 @@ from astropy.nddata import NDData
 from spacepy.pycdf import CDFError
 
 from hermes_core.timedata import HermesData
-from hermes_core.util.util import create_science_filename, parse_science_filename
-import hermes_eea
 import hermes_eea.calibration as calib
 
 level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"

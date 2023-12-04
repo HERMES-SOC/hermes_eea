@@ -6,7 +6,6 @@ from pathlib import Path
 import astropy
 
 from hermes_core.timedata import HermesData
-
 from hermes_eea import log
 import hermes_eea
 from hermes_eea.io import load_data_file, read_calibration_file, write_data_file

@@ -1,8 +1,5 @@
 import pytest
-import os.path
-from pathlib import Path
 
-import hermes_eea
 from hermes_eea.io import load_data_file, read_calibration_file, write_data_file
 
 level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
