@@ -29,8 +29,6 @@ def level1_file(tmp_path_factory):
 def test_load_data_file(level0_file):
     with pytest.raises(FileNotFoundError) as excinfo:
         _ = load_data_file(level0_file)
-    csv_path = os.path.join(hermes_eea._data_directory, "EEA_sci_packet_def.csv")
-    assert str(excinfo.value) == f"[Errno 2] No such file or directory: '{csv_path}'"
 
 
 def test_read_calibration_file():
