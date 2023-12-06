@@ -66,7 +66,7 @@ def do_eea_packet( stepperTableCounter,
      pulse_b = np.zeros((41,4), dtype=np.uint16)
      counter1 = np.zeros((41,4), dtype=np.uint16)
      counter2 = np.zeros((41,4), dtype=np.uint16)
-     µepoch   = np.zeros((41,4), dtype=np.uint16)
+     usec     = np.zeros((41,4), dtype=np.uint16)
 
      skymap = np.zeros((41, 4, 32), dtype=np.uint16)
 
@@ -80,7 +80,7 @@ def do_eea_packet( stepperTableCounter,
          pulse_b[dim0, dim1] = counts[row][33]
          counter1[dim0, dim1] = cnt1[row]
          counter2[dim0, dim1] = cnt2[row]
-         µepoch[dim0, dim1] = epoch[row]
+         usec[dim0, dim1] = epoch[row]
 
 
 # if len(stepperTableCounter) != 64:
@@ -89,7 +89,7 @@ def do_eea_packet( stepperTableCounter,
      return_package['pulse_a'] = pulse_a
      return_package['pulse_b'] = list(pulse_b)
      return_package['counts']  = skymap
-     return_package['µEpoch']  = µepoch
+     return_package['usec']  = usec
      return_package['Epoch']  =  epoch[0]
      return_package['stats']  =  np.sum(skymap)
      return_package['energies']  =  voltages

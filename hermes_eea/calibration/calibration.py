@@ -272,7 +272,7 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Examples
     --------
     """
-    return os.path.join(hermes_eea._data_directory, data_filename)
+    return os.path.join(hermes_eea._calibration_directory, data_filename)
 
 
 def read_calibration_file(calib_filename: Path):

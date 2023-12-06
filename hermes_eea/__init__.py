@@ -21,13 +21,12 @@ INST_TO_SHORTNAME = {INST_NAME: INST_SHORTNAME}
 INST_TO_TARGETNAME = {INST_NAME: INST_TARGETNAME}
 
 _package_directory = os.path.dirname(os.path.abspath(__file__))
-
 _data_directory = os.path.abspath(os.path.join(_package_directory, "data"))
+_calibration_directory = os.path.abspath(os.path.join(_data_directory, "calibration"))
 
 
 log.info(f"hermes_eea version: {__version__}")
 
-skeleton = str( os.path.join(_data_directory, "masterSkeletons", "hermes_eea_l0_00000000000000_v0.0.0.cdf") )
 stepper_table = "flight_stepper.txt"
 
 

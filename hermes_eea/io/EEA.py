@@ -7,7 +7,7 @@ class EEA:
         self.Logical_file_id = None
         self.Data_version = None
                              # ener, defl
-        self.µEpoch = []     #[ 41,  4 ] each of the 164 times, whenever hermes_eea_intgr_or_stepper == 1
+        self.usec = []     #[ 41,  4 ] each of the 164 times, whenever hermes_eea_intgr_or_stepper == 1
         self.PulseA  = []    # [41, 4] overflow[0],accum[33]
         self.PulseB  = []    # [41, 4] overflow[1], accum[34]
         self.Counter1 = []
@@ -30,7 +30,7 @@ class EEA:
 
         packet = 0
         for record in skymap:
-            myEEA.µEpoch.append(record['µEpoch'])
+            myEEA.usec.append(record['usec'])
             myEEA.Epoch.append(record['Epoch'])
             myEEA.ACCUM.append(record['counts'])
             myEEA.PulseA.append(record['pulse_a'])

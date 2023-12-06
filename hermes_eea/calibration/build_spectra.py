@@ -32,7 +32,7 @@ class Build_Hermes_EEA_Data:
         self.multiple_spectra = NDCollection(
             [
                 ("hermes_eea_settle_step_times",
-                 NDCube(data=np.array(self.EEA.µEpoch), wcs=WCS(naxis=2), meta={"CATDESC": "Settle for Each Step"},
+                 NDCube(data=np.array(self.EEA.usec), wcs=WCS(naxis=2), meta={"CATDESC": "Settle for Each Step"},
                         unit="s", )),
                 ("hermes_eea_energy_profile",
                  NDCube(data=np.array(self.EEA.EnergyLabels), wcs=WCS(naxis=2), meta={"CATDESC": "Energy Profile"},
