@@ -119,6 +119,8 @@ def write_data_file(instrument_data: HermesData, output_path: Path) -> str:
     ----------
     instrument_data: HermesData
         A data container in a logical data format
+    output_path: Path
+        A path to the directory where file is to be saved.
 
     Returns
     -------

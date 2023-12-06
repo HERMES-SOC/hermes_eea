@@ -27,6 +27,14 @@ def level0_file(tmp_path_factory):
     return fn
 
 
+@pytest.fixture(scope="session")
+def level1_file(tmp_path_factory):
+    fn = tmp_path_factory.mktemp("data") / level1_filename
+    with open(fn, "w"):
+        pass
+    return fn
+
+
 def get_test_hermes_data():
     """
     Function to get test hermes_core.timedata.HermesData objects to re-use in other tests
@@ -49,14 +57,6 @@ def get_test_hermes_data():
     hermes_data = HermesData(timeseries=ts, support=support, meta=input_attrs)
     hermes_data.timeseries["Bx"].meta.update({"CATDESC": "Test"})
     return hermes_data
-
-
-@pytest.fixture(scope="session")
-def level1_file(tmp_path_factory):
-    fn = tmp_path_factory.mktemp("data") / level1_filename
-    with open(fn, "w"):
-        pass
-    return fn
 
 
 def test_load_data_file(level0_file):
