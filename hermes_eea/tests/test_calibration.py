@@ -7,16 +7,11 @@ from hermes_eea import _data_directory,stepper_table
 from hermes_core.util.util import create_science_filename, parse_science_filename
 import sys
 
-level1a_filename = "hermes_eea_l1_20221205_000000_v1.0.0.cdf"
-level1_filename  = 'hermes_eea_l1_20000101T124114_v1.0.0.cdf'
-ql_filename      = "hermes_eea_ql_20221205_000000_v1.0.0.cdf"
-
 
 @pytest.fixture(scope="session") # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
     fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023042-000000_v0.bin"))
     return fn
-
 
 
 
