@@ -19,14 +19,14 @@ class Build_Hermes_EEA_Data:
         iso_times = Time(epoch_to_iso(self.EEA.Epoch[:]), scale='utc')
         ts_1d_uQ = TimeSeries(
             time=iso_times,
-            data={"stats": astropy_units.Quantity(self.EEA.stats, "gauss", dtype=np.uint16)}
+            data={"hermes_eea_stats": astropy_units.Quantity(self.EEA.stats, "gauss", dtype=np.uint16)}
         )  # this works
         self._hermes_eea_spectra()
         bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
         ts_justTime = TimeSeries(time=iso_times)
 
         self.hermes_eea_data = HermesData(timeseries=ts_1d_uQ, spectra=self.multiple_spectra, meta=bare_attrs)
-        self.hermes_eea_data.timeseries['stats'].meta.update({"CATDESC": "Sum of skymap for each sweep"})
+        self.hermes_eea_data.timeseries['hermes_eea_stats'].meta.update({"CATDESC": "Sum of skymap for each sweep"})
 
     def _hermes_eea_spectra(self):
         self.multiple_spectra = NDCollection(

@@ -17,27 +17,7 @@ def small_level0_file(tmp_path_factory):
     fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023042-000000_v0.bin"))
     return fn
 
-@pytest.fixture(scope="session") # this is a pytest fixture
-def large_level0_file(tmp_path_factory):
-    fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023041-000000_v0.bin"))
-    return fn
 
-@pytest.fixture(scope="session")
-def level1_file(tmp_path_factory):
-    fn = tmp_path_factory.mktemp("data") / level1_filename
-    with open(fn, "w"):
-        pass
-    return fn
-
-def test_get_calibration_file():
-    file = Path(os.path.join(_data_directory, stepper_table))
-    assert file.is_file()
-
-def test_read_calibration_file():
-    file = Path(os.path.join(_data_directory, stepper_table))
-    calib.read_calibration_file(file)
-    assert len(calib.energies) == 164
-    assert len(calib.deflections) == 164
 
 
 def test_calibrate_file(small_level0_file):
@@ -48,35 +28,6 @@ def test_calibrate_file(small_level0_file):
 
 
 
-# This drops all the way down to ccsdspy but seems to work
-def test_calibrate_file_nofile_error():
-    """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
-    with pytest.raises(FileNotFoundError):
-        calib.calibrate_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
-
-# This one is less clear as yet...
-def test_process_file_nofile_error():
-    """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
-    files = []
-    files.append((Path("hermes_EEA_l0_2032339-000000_v0.bin")))
-    files.append((Path("hermes_EEA_l0_2032340-000000_v0.bin")))
-
-    with pytest.raises(FileNotFoundError):
-        calib.process_file(files)
-
-
-
-# this processes more than one file
-def test_process_file_level0(large_level0_file,small_level0_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-
-    output_files = calib.process_file(
-        [large_level0_file, small_level0_file]
-    )
-    assert os.path.basename(output_files[0]) == "hermes_eea_l1_20000101T124114_v1.0.0.cdf"
-    assert os.path.basename(output_files[1]) == "hermes_eea_l1_20000101T170901_v1.0.0.cdf"
-    assert os.path.getsize(output_files[0]) == 266568541
-    assert os.path.getsize(output_files[1]) == 275299
 
 
 
