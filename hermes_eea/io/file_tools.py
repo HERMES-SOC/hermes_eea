@@ -110,7 +110,7 @@ def read_calibration_file(calib_filename: Path) -> Path:
     return None
 
 
-def write_data_file(instrument_data: HermesData) -> str:
+def write_data_file(instrument_data: HermesData, output_path: Path) -> str:
     """
     Given an input data container in a logical data format, write the data to
     a physical file data format.
@@ -130,7 +130,7 @@ def write_data_file(instrument_data: HermesData) -> str:
     """
 
     # Save the Data Container
-    output_filename = instrument_data.save()
+    output_filename = instrument_data.save(output_path)
 
     # Validate the Data File
     validation_errors = validate(output_filename)
