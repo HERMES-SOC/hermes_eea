@@ -17,11 +17,10 @@ from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
-from hermes_eea.Global_Attrs_Cnts import Global_Attrs
 from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
 
 
-from hermes_eea.calibration.build_spectra import Build_Hermes_EEA_Data
+from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 
 __all__ = [
     "process_file",
@@ -60,7 +59,7 @@ def process_file(data_filename: Path) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path) -> Path:
+def calibrate_file(data_filename: Path, destination_dir) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
@@ -81,6 +80,9 @@ def calibrate_file(data_filename: Path) -> Path:
     >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
     """
     log.info(f"Calibrating file:{data_filename}.")
+    if not destination_dir.is_dir():
+        raise OSError("Output directory: " + str(destination_dir) + ". Please create first.")
+        return
     output_filename = data_filename  # TODO: for testing, the output filename MUST NOT same as input
     file_metadata = parse_science_filename(data_filename.name)
 
@@ -88,7 +90,7 @@ def calibrate_file(data_filename: Path) -> Path:
     if file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l0":
         # because of error handling, no test of data is necessary here.
         data = parse_l0_sci_packets(data_filename)
-        level1_filename = l0_sci_data_to_cdf(data, data_filename)
+        level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
         output_filename = level1_filename
     elif file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l1":
         # generate the quicklook data
@@ -155,29 +157,9 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     return data
 
 
-def converting_ccsds_times_to_cdf(coarse, fine):
-    """
-    Liam was using this in his initial endeavors
-    I am not sure if any tests are still using it
-    """
-    epoch = np.zeros(coarse.shape[0], dtype=np.uint)
-    p1 = np.zeros(coarse.shape[0], dtype=np.uint)
-    p2 = np.zeros(coarse.shape[0], dtype=np.uint)
-
-    tai_time = {}
-    tai_time["taiEpoch_tt2000"] = 64184000000
-    tai_time["nanosPerMicro"] = 1000
-    tai_time["MicrosPerSec"] = 1000000
-    tai_time["nanosPerSec"] = 1000000000
-    example = coarse[0] * tai_time["nanosPerSec"]
-    p1 = np.int64(coarse) * np.int64(tai_time["nanosPerSec"])
-    p2 = np.int64(fine) * np.int64(tai_time["nanosPerMicro"])
-    epoch = p1 + p2
-    result = np.uint(epoch + tai_time["taiEpoch_tt2000"])
-    return result
 
 
-def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
+def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Path) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
 
@@ -232,9 +214,6 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
 
-        #eea_cdf = WriteEEACDF(file_metadata, data_filename, hermes_eea.skeleton)
-        glblattr = Global_Attrs(file_metadata['version'],
-                                                  cdf_filename.name, lo_ext=False)
         myEEA = EEA(file_metadata)
         # This populates so doesn't have to return much
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
@@ -243,11 +222,11 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
 
         n_packets = len(myEEA.Epoch)
 
-        hermes_eea_factory = Build_Hermes_EEA_Data(myEEA)
+        hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
         hermes_eea_factory.build_HermesData()
 
         try:
-            cdf_path = hermes_eea_factory.hermes_eea_data.save( str(cdf_filename.parent) , True)
+            cdf_path = hermes_eea_factory.hermes_eea_data.save( str(destination_dir) , True)
         except Exception as e:
             log.error(e)
             sys.exit(2)

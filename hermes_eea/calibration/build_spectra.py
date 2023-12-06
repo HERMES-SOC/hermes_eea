@@ -10,7 +10,11 @@ from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, e
 import numpy as np
 from astropy.wcs import WCS
 
-class Build_Hermes_EEA_Data:
+class Hermes_EEA_Data_Processor:
+    """
+    This class plays the role of that the Write* classes provide in FPI
+    It not only handles the populating and writing of the cdf but attibutes are also added here.
+    """
 
     def __init__(self, myEEA):
         self.EEA = myEEA

@@ -8,7 +8,6 @@ on:
   pull_request:
     branches:
       - main
-      - adding_timeseries
 jobs:
   build:
 
