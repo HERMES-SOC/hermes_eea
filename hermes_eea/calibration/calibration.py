@@ -226,8 +226,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         )
         cdf.close()
     if data:
-        cdf = pycdf.CDF(str(cdf_filename))
-        cdf.readonly(False)
+        #cdf = pycdf.CDF(str(cdf_filename))
+        #cdf.readonly(False)
 
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
