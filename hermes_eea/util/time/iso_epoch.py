@@ -6,12 +6,14 @@ import spacepy.time as spt
 import re
 import numpy as np
 
+
 def jday_to_iso(jday: str):
     try:
-        dateobj = datetime.strptime(jday, '%Y-%jT%H:%M:%S.%f').date()
+        dateobj = datetime.strptime(jday, "%Y-%jT%H:%M:%S.%f").date()
     except ValueError:
-        dateobj = datetime.strptime(jday, '%Y-%jT%H:%M:%S').date()
+        dateobj = datetime.strptime(jday, "%Y-%jT%H:%M:%S").date()
     return dateobj
+
 
 def parseJdayRep(rangeItem):
     _apid_pattern = (re.compile("APID\((?P<apid>\d+)\)"),)
@@ -58,7 +60,7 @@ def iso_obj_to_epoch(trange):
     """
     converted = []
     for t in trange:
-        #dateString = t.strftime("%Y-%m-%dT%H:%M:%S.000000000")
+        # dateString = t.strftime("%Y-%m-%dT%H:%M:%S.000000000")
         dateString = t.strftime("%Y-%m-%dT%H:%M:%S.%f000")
         try:
             c = cdflib.epochs.CDFepoch.parse(dateString)
@@ -67,6 +69,8 @@ def iso_obj_to_epoch(trange):
             print(t + " This time range value doesn't look too kosher...", file=stderr)
         # exit(1)
     return converted
+
+
 def iso_to_epoch(trange):
     """
     ISO to CDF EPOCH:
@@ -85,9 +89,12 @@ def iso_to_epoch(trange):
         # exit(1)
     return converted
 
-'''
+
+"""
 This returns a string, not a date object
-'''
+"""
+
+
 def epoch_to_iso(trange):
     """
     CDF EPOCH TO ISO:
@@ -102,6 +109,7 @@ def epoch_to_iso(trange):
         in_iso.append(c)
     return in_iso
 
+
 def epoch_to_eea_iso(trange):
     """
     CDF EPOCH TO ISO:
@@ -113,8 +121,9 @@ def epoch_to_eea_iso(trange):
     in_iso = []
     for t in trange:
         c = cdflib.epochs.CDFepoch.encode_tt2000(int(t))
-        in_iso.append((c.replace("T"," ")[0:19]))
+        in_iso.append((c.replace("T", " ")[0:19]))
     return in_iso
+
 
 def epoch_to_iso_obj(trange):
     """
@@ -131,18 +140,20 @@ def epoch_to_iso_obj(trange):
         in_iso.append(d)
     return in_iso
 
+
 def str_to_iso(str_range):
     iso_range = []
     for t in str_range:
         try:
-            iso_range.append(datetime.strptime(t, '%Y-%m-%dT%H:%M:%S.%f'))
+            iso_range.append(datetime.strptime(t, "%Y-%m-%dT%H:%M:%S.%f"))
         except ValueError:
             try:
-                iso_range.append(datetime.strptime(t[0:26], '%Y-%m-%dT%H:%M:%S.%f'))
+                iso_range.append(datetime.strptime(t[0:26], "%Y-%m-%dT%H:%M:%S.%f"))
             except ValueError:
-                iso_range.append(datetime.strptime(t[0:19], '%Y-%m-%dT%H:%M:%S'))
+                iso_range.append(datetime.strptime(t[0:19], "%Y-%m-%dT%H:%M:%S"))
 
-    return iso_range    #iso_range.append(t.strftime("%Y-%m-%dT%H:%M:%S.%f"))
+    return iso_range  # iso_range.append(t.strftime("%Y-%m-%dT%H:%M:%S.%f"))
+
 
 def cdf_epoch_tojuldays(epoch_time):
     """
@@ -165,6 +176,7 @@ def cdf_epoch_tojuldays(epoch_time):
     jday = jDayP1 - 1 + fraction
     return jday
 
+
 def cdf_epoch_tojuldays_24(epoch_time):
     """
     print,cdf_epoch_tojuldays(567098205397306000) = 2458108.6'
@@ -183,7 +195,7 @@ def cdf_epoch_tojuldays_24(epoch_time):
         iso_obj = epoch_to_iso([Epoch_FS0])
     elif isinstance(epoch_time, datetime):
         iso_obj = epoch_time
-    elif isinstance(epoch_time,int):
+    elif isinstance(epoch_time, int):
         iso_string = cdflib.epochs.CDFepoch.encode_tt2000(epoch_time)
         iso_obj = dateutil.parser.parse(iso_string)
     elif epoch_time.dtype == np.uint64:
@@ -192,14 +204,15 @@ def cdf_epoch_tojuldays_24(epoch_time):
 
     jDayP1 = cdflib.epochs.CDFepoch._JulianDay(iso_obj.year, iso_obj.month, iso_obj.day)
     fraction = 12 + iso_obj.hour
-    jday = jDayP1 -1 + fraction/24
+    jday = jDayP1 - 1 + fraction / 24
     return jday
 
 
-
-'''
+"""
 Nominally,Epoch_FS0 is one of the elements of the epoch
-array extracted using Daniel's ccsds.py and as such is np.int64 '''
+array extracted using Daniel's ccsds.py and as such is np.int64 """
+
+
 def epoch_to_matching(Epoch_FS0):
     """
     This produces the YYYYMMDDHHMMSSmillisec 20 char string used for match data tables'''
@@ -211,7 +224,7 @@ def epoch_to_matching(Epoch_FS0):
         Epoch_FS0 = int(Epoch_FS0)
         isoTimeString = epoch_to_iso([Epoch_FS0])
         mD = dateutil.parser.parse(isoTimeString[0])
-    elif isinstance(Epoch_FS0,datetime):
+    elif isinstance(Epoch_FS0, datetime):
         mD = Epoch_FS0
     elif Epoch_FS0.dtype == np.uint64:
         isoTimeString = epoch_to_iso([Epoch_FS0])
@@ -228,4 +241,3 @@ def epoch_to_matching(Epoch_FS0):
         ]
     )
     return matchingString
-
