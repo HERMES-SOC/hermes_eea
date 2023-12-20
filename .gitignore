@@ -147,7 +147,7 @@ docs/_build
 docs/generated
 docs/api
 docs/whatsnew/latest_changelog.txt
-hermes_eea/version.py
+hermes_eea/_version.py
 htmlcov/
 
 

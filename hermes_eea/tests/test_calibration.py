@@ -8,6 +8,7 @@ from hermes_core.util.util import create_science_filename, parse_science_filenam
 import sys
 
 
+
 @pytest.fixture(scope="session") # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
     fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023042-000000_v0.bin"))
