@@ -28,11 +28,8 @@ from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 
 __all__ = [
     "process_file",
-    "parse_l0_sci_packets",
-    "l0_sci_data_to_cdf",
-    "calibrate_file",
+    "calibrate_data",
     "get_calibration_file",
-    "read_calibration_file",
 ]
 
 
@@ -65,23 +62,32 @@ def process_file(data_filename: Path) -> list:
 
 def calibrate_file(data_filename: Path, destination_dir) -> Path:
     """
-    Given an input data file, raise it to the next level
-    (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
+    Given a data conainer with uncalibrated data from an input file, calibrate the data
+    and and return a data container of the calibrated data.
+
+    Function should calibrate and increase the data level by one-level. For example,
+    if the data container `instrument_data` contains L0 data, calibrate the data to L1
+    data. If the the `instrument_data` contains L1 data, calibrate the data to L2 data.
+
+    Calibrating from L0 -> L4 data requres multiple successive calls to the `calibrate_data`
+    function.
 
     Parameters
     ----------
-    data_filename: Path
-        Fully specificied filename of the input data file.
+    instrument_data: HermesData
+        A data container in a logical data format from a non-calibrated file
 
     Returns
     -------
-    output_filename: Path
-        Fully specificied filename of the output file.
+    output_data: HermesData
+        A data container in a logical data format to create a calibrated file
 
     Examples
     --------
-    >>> from hermes_eea.calibration import calibrate_file
-    >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
+    >>> from hermes_eea.io import load_data_file
+    >>> from hermes_eea.calibration import calibrate_data
+    >>> level_0_data = load_data_file('hermes_EEA_l0_2022239-000000_v0.bin') # doctest: +SKIP
+    >>> level_1_data = calibrate_data(level_0_data)  # doctest: +SKIP
     """
     log.info(f"Calibrating file:{data_filename}.")
     if not destination_dir.is_dir():
@@ -137,9 +143,12 @@ def calibrate_file(data_filename: Path, destination_dir) -> Path:
         data = parse_l0_sci_packets(data_filename)
         output_filename = ql_filename
     else:
-        raise ValueError(f"The file {data_filename} is not recognized.")
+        calib_data = read_calibration_file(calib_file)
 
-    return output_filename
+    # Create output data
+    output_data = instrument_data  # NOTE : Template does not modify input data
+
+    return output_data
 
 
 def parse_l0_sci_packets(data_filename: Path) -> dict:
@@ -255,13 +264,13 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Given a time, return the appropriate calibration file.
     Parameters
     ----------
-    data_filename: str
-        Fully specificied filename of the non-calibrated file (data level < 2)
+    instrument_data: HermesData
+        A data container in a logical data format
     time: ~astropy.time.Time
 
     Returns
     -------
-    calib_filename: str
+    calib_filename: Path
         Fully specificied filename for the appropriate calibration file.
 
     Examples
