@@ -1,17 +1,26 @@
 """
 A module for all things calibration.
 """
+from datetime import datetime, timezone, timedelta
 import random
 import os.path
 from pathlib import Path
-
+import sys
 import ccsdspy
+import numpy as np
+from spacepy import pycdf
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
-
 import hermes_eea
 from hermes_eea.io import read_file
+import hermes_eea.calibration as calib
+from hermes_eea.io.EEA import EEA
+from hermes_eea.SkymapFactory import SkymapFactory
+from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
+
+
+from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 
 __all__ = [
     "process_file",
@@ -40,17 +49,17 @@ def process_file(data_filename: Path) -> list:
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
-
-    calibrated_file = calibrate_file(data_filename)
-    output_files.append(calibrated_file)
-    #  data_plot_files = plot_file(data_filename)
-    #  calib_plot_files = plot_file(calibrated_file)
+    for filename in data_filename:
+        calibrated_file = calibrate_file(filename)
+        output_files.append(calibrated_file)
+        #  data_plot_files = plot_file(data_filename)
+        #  calib_plot_files = plot_file(calibrated_file)
 
     # add other tasks below
     return output_files
 
 
-def calibrate_file(data_filename: Path) -> Path:
+def calibrate_file(data_filename: Path, destination_dir) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
@@ -71,27 +80,19 @@ def calibrate_file(data_filename: Path) -> Path:
     >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
     """
     log.info(f"Calibrating file:{data_filename}.")
-    output_filename = (
-        data_filename  # TODO: for testing, the output filename MUST NOT same as input
-    )
+    if not destination_dir.is_dir():
+        raise OSError("Output directory: " + str(destination_dir) + ". Please create first.")
+        return
+    output_filename = data_filename  # TODO: for testing, the output filename MUST NOT same as input
     file_metadata = parse_science_filename(data_filename.name)
 
     # check if level 0 binary file, if so call appropriate functions
-    if (
-        file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l0"
-    ):
-        #  data = parse_l0_sci_packets(data_filename)
-        data = {}
-        # test opening the file
-        with open(data_filename, "r") as fp:
-            pass
-        level1_filename = l0_sci_data_to_cdf(data, data_filename)
+    if file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l0":
+        # because of error handling, no test of data is necessary here.
+        data = parse_l0_sci_packets(data_filename)
+        level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
         output_filename = level1_filename
-    elif (
-        file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l1"
-    ):
+    elif file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l1":
         # generate the quicklook data
         #
         # the following shows an example flow for calibrating a file
@@ -118,10 +119,8 @@ def calibrate_file(data_filename: Path) -> Path:
         # create an empty file for testing purposes
         with open(data_filename.parent / ql_filename, "w"):
             pass
-
-        # example log messages
-        log.info(f"Despiking removing {random.randint(0, 10)} spikes")
-        log.warning(f"Despiking could not remove {random.randint(1, 5)}")
+        # here
+        data = parse_l0_sci_packets(data_filename)
         output_filename = ql_filename
     else:
         raise ValueError(f"The file {data_filename} is not recognized.")
@@ -152,13 +151,15 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     log.info(f"Parsing packets from file:{data_filename}.")
 
     pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "EEA_sci_packet_def.csv")
+        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
     )
     data = pkt.load(data_filename)
     return data
 
 
-def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
+
+
+def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Path) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
 
@@ -184,26 +185,58 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
     >>> data_packets = calib.parse_l0_sci_packets(data_filename)  # doctest: +SKIP
     >>> cdf_filename = calib.l0_sci_data_to_cdf(data_packets, data_filename)  # doctest: +SKIP
     """
+
+    # this is transferring name.bin to name.cdf
     file_metadata = parse_science_filename(original_filename.name)
 
+    # coarse = data["SHCOARSE"][idx]
+    # fine = data["SHFINE"][idx]
+    # time = convert_packet_time_to_datetime(coarse, fine)
     cdf_filename = original_filename.parent / create_science_filename(
         file_metadata["instrument"],
         file_metadata["time"],
         "l1",
         f'1.0.{file_metadata["version"]}',
     )
+    if not cdf_filename.is_file():
+        cdf = pycdf.CDF(
+            str(cdf_filename),
+            os.path.join(
+                hermes_eea._data_directory,
+                "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
+            ),
+        )
+        cdf.close()
+    if data:
+        #cdf = pycdf.CDF(str(cdf_filename))
+        #cdf.readonly(False)
 
-    # create an empty file for testing purposes
-    with open(cdf_filename, "w"):
-        pass
+        calibration_file = get_calibration_file(hermes_eea.stepper_table)
+        read_calibration_file(calibration_file)
 
-    return cdf_filename
+        myEEA = EEA(file_metadata)
+        # This populates so doesn't have to return much
+        SkymapFactory(data, calib.energies, calib.deflections, myEEA)
+        most_active = np.where(np.array(myEEA.stats) > 150)
+        example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
+
+        n_packets = len(myEEA.Epoch)
+
+        hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
+        hermes_eea_factory.build_HermesData()
+
+        try:
+            cdf_path = hermes_eea_factory.hermes_eea_data.save( str(destination_dir) , True)
+        except Exception as e:
+            log.error(e)
+            sys.exit(2)
+
+    return cdf_path
 
 
 def get_calibration_file(data_filename: Path, time=None) -> Path:
     """
     Given a time, return the appropriate calibration file.
-
     Parameters
     ----------
     data_filename: str
@@ -218,7 +251,7 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Examples
     --------
     """
-    return None
+    return os.path.join(hermes_eea._calibration_directory, data_filename)
 
 
 def read_calibration_file(calib_filename: Path):
@@ -238,4 +271,51 @@ def read_calibration_file(calib_filename: Path):
     Examples
     --------
     """
-    return None
+    lines = read_file(os.path.join(calib_filename))
+    calib.energies = []
+    calib.deflections = []
+    for line in lines:
+        calib.energies.append(int(line[8:10], 16))
+        calib.deflections.append(int(line[10:12], 16))
+
+def retrieve_canned_attributes():
+    input_attrs = {
+        "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
+        "Data_level": "L1>Level 1",  # NOT AN ISTP ATTR
+        "Data_version": "0.0.1",
+        "Descriptor": "EEA>Electron Electrostatic Analyzer",
+        "Data_product_descriptor": "odpd",
+        "HTTP_LINK": [
+            "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
+            "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
+            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html"
+        ],
+        "Instrument_mode": "default",  # NOT AN ISTP ATTR
+        "Instrument_type": "Electric Fields (space)",
+        "LINK_TEXT": [
+            "ISTP Guide",
+            "Global Attrs",
+            "Variable Attrs"
+        ],
+        "LINK_TITLE": [
+            "ISTP Guide",
+            "Global Attrs",
+            "Variable Attrs"
+        ],
+        "MODS": [
+            "v0.0.0 - Original version.",
+            "v1.0.0 - Include trajectory vectors and optics state.",
+            "v1.1.0 - Update metadata: counts -> flux.",
+            "v1.2.0 - Added flux error.",
+            "v1.3.0 - Trajectory vector errors are now deltas."
+        ],
+        "PI_affiliation": "HERMES",
+        "PI_name": "HERMES SOC",
+        "TEXT": "Valid Test Case",
+        "VATTRS": [
+            "stats",
+            "energies"
+         ]
+    }
+
+    return input_attrs
