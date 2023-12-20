@@ -17,7 +17,11 @@ from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
-from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
+from hermes_eea.util.time.iso_epoch import (
+    epoch_to_iso_obj,
+    epoch_to_eea_iso,
+    epoch_to_iso,
+)
 
 
 from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
@@ -81,18 +85,28 @@ def calibrate_file(data_filename: Path, destination_dir) -> Path:
     """
     log.info(f"Calibrating file:{data_filename}.")
     if not destination_dir.is_dir():
-        raise OSError("Output directory: " + str(destination_dir) + ". Please create first.")
+        raise OSError(
+            "Output directory: " + str(destination_dir) + ". Please create first."
+        )
         return
-    output_filename = data_filename  # TODO: for testing, the output filename MUST NOT same as input
+    output_filename = (
+        data_filename  # TODO: for testing, the output filename MUST NOT same as input
+    )
     file_metadata = parse_science_filename(data_filename.name)
 
     # check if level 0 binary file, if so call appropriate functions
-    if file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l0":
+    if (
+        file_metadata["instrument"] == hermes_eea.INST_NAME
+        and file_metadata["level"] == "l0"
+    ):
         # because of error handling, no test of data is necessary here.
         data = parse_l0_sci_packets(data_filename)
         level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
         output_filename = level1_filename
-    elif file_metadata["instrument"] == hermes_eea.INST_NAME and file_metadata["level"] == "l1":
+    elif (
+        file_metadata["instrument"] == hermes_eea.INST_NAME
+        and file_metadata["level"] == "l1"
+    ):
         # generate the quicklook data
         #
         # the following shows an example flow for calibrating a file
@@ -157,9 +171,9 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     return data
 
 
-
-
-def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Path) -> Path:
+def l0_sci_data_to_cdf(
+    data: dict, original_filename: Path, destination_dir: Path
+) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
 
@@ -208,8 +222,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Pat
         )
         cdf.close()
     if data:
-        #cdf = pycdf.CDF(str(cdf_filename))
-        #cdf.readonly(False)
+        # cdf = pycdf.CDF(str(cdf_filename))
+        # cdf.readonly(False)
 
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
@@ -226,7 +240,9 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Pat
         hermes_eea_factory.build_HermesData()
 
         try:
-            cdf_path = hermes_eea_factory.hermes_eea_data.save( str(destination_dir) , True)
+            cdf_path = hermes_eea_factory.hermes_eea_data.save(
+                str(destination_dir), True
+            )
         except Exception as e:
             log.error(e)
             sys.exit(2)
@@ -278,6 +294,7 @@ def read_calibration_file(calib_filename: Path):
         calib.energies.append(int(line[8:10], 16))
         calib.deflections.append(int(line[10:12], 16))
 
+
 def retrieve_canned_attributes():
     input_attrs = {
         "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
@@ -288,34 +305,23 @@ def retrieve_canned_attributes():
         "HTTP_LINK": [
             "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
             "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
-            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html"
+            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html",
         ],
         "Instrument_mode": "default",  # NOT AN ISTP ATTR
         "Instrument_type": "Electric Fields (space)",
-        "LINK_TEXT": [
-            "ISTP Guide",
-            "Global Attrs",
-            "Variable Attrs"
-        ],
-        "LINK_TITLE": [
-            "ISTP Guide",
-            "Global Attrs",
-            "Variable Attrs"
-        ],
+        "LINK_TEXT": ["ISTP Guide", "Global Attrs", "Variable Attrs"],
+        "LINK_TITLE": ["ISTP Guide", "Global Attrs", "Variable Attrs"],
         "MODS": [
             "v0.0.0 - Original version.",
             "v1.0.0 - Include trajectory vectors and optics state.",
             "v1.1.0 - Update metadata: counts -> flux.",
             "v1.2.0 - Added flux error.",
-            "v1.3.0 - Trajectory vector errors are now deltas."
+            "v1.3.0 - Trajectory vector errors are now deltas.",
         ],
         "PI_affiliation": "HERMES",
         "PI_name": "HERMES SOC",
         "TEXT": "Valid Test Case",
-        "VATTRS": [
-            "stats",
-            "energies"
-         ]
+        "VATTRS": ["stats", "energies"],
     }
 
     return input_attrs
