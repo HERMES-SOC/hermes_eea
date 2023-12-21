@@ -12,8 +12,8 @@ N_AZIMUTH = 32
 # This may eventually be handled in a python multiprocessor module instance:
 def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     # ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
-    #'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
-    #'hermes_eea_sector_index', 'hermes_eea_sector_label'])
+    # 'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
+    # 'hermes_eea_sector_index', 'hermes_eea_sector_label'])
 
     # science_data:
     start_of_good_data = np.where(l0_cdf["SHEID"][:] == 1)[0][0]
@@ -58,7 +58,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     result = []
     for pckt in package:
         packet_contents = do_eea_packet(*pckt)
-        if packet_contents != None:
+        if packet_contents is not None:
             result.append(packet_contents)
     myEEA.populate(myEEA, result)
 
