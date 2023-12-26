@@ -35,6 +35,7 @@ jobs:
 
     - name: Test Lambda Function with curl
       run: |
+        cd ../sdc_aws_processing_lambda
         curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @lambda_function/tests/test_data/test_eea_event.json
 
     - name: Copy Processed Files from Container
