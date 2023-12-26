@@ -1,6 +1,6 @@
 name: Test Lambda Function Locally and Upload Artifacts
 
-on: [pull_request, pull_request_target]
+on: [pull_request_target]
 
 jobs:
   test-and-upload:
@@ -59,7 +59,6 @@ jobs:
     - name: Comment PR
       uses: thollander/actions-comment-pull-request@v2
       # Only comment if triggered by a pull request target event
-      if: github.event_name == 'pull_request_target'
       with:
         message: |
             The processed files are available as an artifact: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts/${{ steps.artifact-upload-step.outputs.artifact-id }}
