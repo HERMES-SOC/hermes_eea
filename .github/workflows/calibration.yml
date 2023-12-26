@@ -17,7 +17,7 @@ jobs:
         cd ..
         git clone https://github.com/dbarrous/sdc_aws_processing_lambda.git\
             --branch refactor-processing \
-            --single-branch \
+            --single-branch
         cd lambda_function
         BRANCH_URL="${{ github.event.pull_request.head.ref }}"
         echo "Branch URL: $BRANCH_URL"
