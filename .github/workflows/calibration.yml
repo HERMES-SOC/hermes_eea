@@ -18,7 +18,7 @@ jobs:
         git clone https://github.com/dbarrous/sdc_aws_processing_lambda.git\
             --branch refactor-processing \
             --single-branch
-        cd lambda_function
+        cd sdc_aws_processing_lambda/lambda_function
         BRANCH_URL="${{ github.event.pull_request.head.ref }}"
         echo "Branch URL: $BRANCH_URL"
         sed -i "s|hermes_eea @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea @ $BRANCH_URL|" requirements.txt
