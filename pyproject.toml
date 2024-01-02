@@ -27,7 +27,8 @@ classifiers = [
 ]
 dependencies = [
   'hermes_core @ git+https://github.com/HERMES-SOC/hermes_core/',
-  'ccsdspy @ git+https://github.com/ddasilva/ccsdspy.git'
+  'ccsdspy @ git+https://github.com/ddasilva/ccsdspy.git',
+  'ndcube>=2.1.3', # Temporary while not part of hermes_core
 ]
 
 [project.optional-dependencies]
