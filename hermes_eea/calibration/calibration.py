@@ -214,10 +214,10 @@ def l0_sci_data_to_cdf(
     #             "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
     #         ),
     #     )
-        cdf.close()
+        # cdf.close()
     if data:
-        cdf = pycdf.CDF(str(cdf_filename))
-        cdf.readonly(False)
+        log.info(f"Writing data to file:{cdf_filename}.")
+        cdf = pycdf.CDF(str(cdf_filename), create=True, readonly=False)
 
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
