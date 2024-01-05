@@ -48,11 +48,10 @@ def process_file(data_filename: Path) -> list:
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
-    for filename in data_filename:
-        calibrated_file = calibrate_file(filename)
-        output_files.append(calibrated_file)
-        #  data_plot_files = plot_file(data_filename)
-        #  calib_plot_files = plot_file(calibrated_file)
+    calibrated_file = calibrate_file(filename)
+    output_files.append(calibrated_file)
+    #  data_plot_files = plot_file(data_filename)
+    #  calib_plot_files = plot_file(calibrated_file)
 
     # add other tasks below
     return output_files
@@ -207,18 +206,18 @@ def l0_sci_data_to_cdf(
         "l1",
         f'1.0.{file_metadata["version"]}',
     )
-    if not cdf_filename.is_file():
-        cdf = pycdf.CDF(
-            str(cdf_filename),
-            os.path.join(
-                hermes_eea._data_directory,
-                "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
-            ),
-        )
+    # if not cdf_filename.is_file():
+    #     cdf = pycdf.CDF(
+    #         str(cdf_filename),
+    #         os.path.join(
+    #             hermes_eea._data_directory,
+    #             "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
+    #         ),
+    #     )
         cdf.close()
     if data:
-        # cdf = pycdf.CDF(str(cdf_filename))
-        # cdf.readonly(False)
+        cdf = pycdf.CDF(str(cdf_filename))
+        cdf.readonly(False)
 
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
