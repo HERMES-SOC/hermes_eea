@@ -199,14 +199,17 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Pat
         f'1.0.{file_metadata["version"]}',
     )
     if not cdf_filename.is_file():
-        cdf = pycdf.CDF(
-            str(cdf_filename),
-            os.path.join(
+        try:
+            cdf = pycdf.CDF(
+               str(cdf_filename),
+               os.path.join(
                 hermes_eea._data_directory,
                 "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
-            ),
-        )
-        cdf.close()
+               ),
+                 )
+            cdf.close()
+        except FileNotFoundError:
+           pass
     if data:
         #cdf = pycdf.CDF(str(cdf_filename))
         #cdf.readonly(False)
