@@ -17,7 +17,7 @@ import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
-
+from spacepy import pycdf
 
 from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 
