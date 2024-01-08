@@ -15,12 +15,12 @@ jobs:
     - name: Build Lambda Docker Image
       run: |
         cd ..
-        git clone https://github.com/dbarrous/sdc_aws_processing_lambda.git
+        git clone --branch refactor-processing https://github.com/dbarrous/sdc_aws_processing_lambda.git
         cd sdc_aws_processing_lambda/lambda_function
         BRANCH_URL="git+https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git@${{ github.event.pull_request.head.ref }}"
         echo "Branch URL: $BRANCH_URL"
         sed -i "s|hermes_eea @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea @ $BRANCH_URL|" requirements.txt
-        docker build -t processing_function:latest .
+        docker build -t processing_function:latest . --network host
         
     - name: Run Lambda Docker Container
       run: |
@@ -34,14 +34,17 @@ jobs:
     - name: Test Lambda Function with curl
       id: test-lambda
       run: |
-        cd ../sdc_aws_processing_lambda
+        cd ../sdc_aws_processing_lambda/
         # Run curl and write the HTTP status code to a variable
-        HTTP_STATUS=$(curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" \
-                      -d @lambda_function/tests/test_data/test_eea_event.json \
-                      -o response.json -w '%{http_code}')
-    
-        # Check if the HTTP status is 200 (OK)
-        if [ "$HTTP_STATUS" -eq 200 ]; then
+        HTTP_STATUS=$(curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @lambda_function/tests/test_data/test_eea_event.json)
+        echo "HTTP Status: $HTTP_STATUS"
+
+        # Grep the HTTP status code from the curl output for 200 (success)
+        STATUS_CODE=$(echo $HTTP_STATUS | grep -oP '200')
+        echo "Status Code: $STATUS_CODE"
+
+        # If the HTTP status code is 200, then the test is successful
+        if [ "$STATUS_CODE" == "200" ]; then
           echo "Success: HTTP status is 200"
           echo "test_success=true" >> $GITHUB_OUTPUT
           exit 0  # Exit with success
