@@ -8,7 +8,6 @@ from pathlib import Path
 import sys
 import ccsdspy
 import numpy as np
-from spacepy import pycdf
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
