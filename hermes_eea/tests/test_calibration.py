@@ -18,7 +18,9 @@ def small_level0_file(tmp_path_factory):
 
 def test_calibrate_file(small_level0_file):
     """Test that the output filenames are correct and that a file was actually created."""
-    destination_dir = Path(os.path.join(_data_directory, "output"))
+    destination_dir = Path(os.path.join(_data_directory, "random_dir"))
+    if not os.path.exists(destination_dir):
+       os.makedirs(destination_dir)
     output_file = calib.calibrate_file(small_level0_file, destination_dir)
     assert os.path.basename(output_file) == "hermes_eea_l1_20000101T170901_v1.0.0.cdf"
     assert os.path.getsize(output_file) > 200000
