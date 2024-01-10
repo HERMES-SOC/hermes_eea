@@ -73,16 +73,17 @@ jobs:
         set JAVA_TOOL_OPTIONS="-Dfile.encoding=UTF8"
 
         # Run tests
-        pytest --pyargs hermes_merit --cov hermes_merit
+        pytest --pyargs hermes_eea --cov hermes_eea
       # Skip Windows Python 3.11 tests until SpacePy is updated
       if: ${{(matrix.platform == 'windows-latest' && matrix.python-version != '3.11')}}
 
     - name: Run tests on Ubuntu and MacOS
-      run: pytest --pyargs hermes_merit --cov hermes_merit
+      run: pytest --pyargs hermes_eea --cov hermes_eea
       env:
         PLATFORM: ${{ matrix.platform }}
-      if: ${{ !(matrix.platform == 'windows-latest') }}
-    
+      # Skip Windows Python 3.11 tests until SpacePy is updated
+      if: ${{ !(matrix.platform == 'windows-latest' && matrix.python-version == '3.11') }}
+
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3
       # Skip Windows Python 3.11 tests until SpacePy is updated

@@ -16,8 +16,8 @@ def jday_to_iso(jday: str):
 
 
 def parseJdayRep(rangeItem):
-    _apid_pattern = (re.compile("APID\((?P<apid>\d+)\)"),)
-    jdayRep = re.compile("(\d\d\d\d)-([\d]+)[/ T]*(\d\d:\d\d:\d\d)[.\d]*")
+    _apid_pattern = (re.compile(r"APID\((?P<apid>\d+)\)"),)
+    jdayRep = re.compile(r"(\d\d\d\d)-([\d]+)[/ T]*(\d\d:\d\d:\d\d)[.\d]*")
     year = jdayRep.match(rangeItem).group(1)
     assert int(year) > 0
     doy = jdayRep.match(rangeItem).group(2)
