@@ -112,7 +112,7 @@ def epoch_to_eea_iso(trange):
     """
     in_iso = []
     for t in trange:
-        c = cdflib.epochs.CDFepoch.encode_tt2000(int(t))
+        c = cdflib.epochs.CDFepoch.encode_tt2000(int(t)) # this number is based on an EEA, not FPI TAI time
         in_iso.append((c.replace("T"," ")[0:19]))
     return in_iso
 
