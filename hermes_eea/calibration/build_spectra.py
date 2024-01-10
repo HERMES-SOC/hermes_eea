@@ -5,13 +5,9 @@ from astropy.time import Time
 from hermes_core.timedata import HermesData
 from astropy.nddata import NDData
 from ndcube import NDCube, NDCollection
-from hermes_eea.util.time.iso_epoch import (
-    epoch_to_iso_obj,
-    epoch_to_eea_iso,
-    epoch_to_iso,
-)
 import numpy as np
 from astropy.wcs import WCS
+from spacepy.pycdf import Library
 
 
 class Hermes_EEA_Data_Processor:
@@ -25,7 +21,7 @@ class Hermes_EEA_Data_Processor:
         self.raw_counts = astropy_units.def_unit("raw instrument counts")
 
     def build_HermesData(self):
-        iso_times = Time(epoch_to_iso(self.EEA.Epoch[:]), scale="utc")
+        iso_times = Time([Library().tt2000_to_datetime(e) for e in self.EEA.Epoch[:]])
         ts_1d_uQ = TimeSeries(
             time=iso_times,
             data={
