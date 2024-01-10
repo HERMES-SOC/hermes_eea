@@ -8,7 +8,6 @@ from pathlib import Path
 import sys
 import ccsdspy
 import numpy as np
-from spacepy import pycdf
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
@@ -17,7 +16,12 @@ from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
-
+from hermes_eea.util.time.iso_epoch import (
+    epoch_to_iso_obj,
+    epoch_to_eea_iso,
+    epoch_to_iso,
+)
+from spacepy import pycdf
 
 from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 
@@ -208,14 +212,17 @@ def l0_sci_data_to_cdf(
         f'1.0.{file_metadata["version"]}',
     )
     if not cdf_filename.is_file():
-        cdf = pycdf.CDF(
-            str(cdf_filename),
-            os.path.join(
-                hermes_eea._data_directory,
-                "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
-            ),
-        )
-        cdf.close()
+        try:
+            cdf = pycdf.CDF(
+                str(cdf_filename),
+                os.path.join(
+                    hermes_eea._data_directory,
+                    "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
+                ),
+            )
+            cdf.close()
+        except FileNotFoundError:
+            pass
     if data:
         # cdf = pycdf.CDF(str(cdf_filename))
         # cdf.readonly(False)
@@ -226,6 +233,10 @@ def l0_sci_data_to_cdf(
         myEEA = EEA(file_metadata)
         # This populates so doesn't have to return much
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
+        most_active = np.where(np.array(myEEA.stats) > 150)
+        example_start_times = epoch_to_iso_obj(myEEA.Epoch[0:10])
+
+        n_packets = len(myEEA.Epoch)
 
         hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
         hermes_eea_factory.build_HermesData()
