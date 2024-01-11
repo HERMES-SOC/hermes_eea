@@ -17,7 +17,6 @@ import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 # cdflib -> spacepy
-from spacepy import pycdf
 from spacepy.pycdf import Library
 from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 from astropy.time import Time
@@ -198,18 +197,6 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Pat
         "l1",
         f'1.0.{file_metadata["version"]}',
     )
-    if not cdf_filename.is_file():
-        try:
-            cdf = pycdf.CDF(
-               str(cdf_filename),
-               os.path.join(
-                hermes_eea._data_directory,
-                "masterSkeletons/hermes_eea_l1_00000000000000_v0.0.0.cdf",
-               ),
-                 )
-            cdf.close()
-        except FileNotFoundError:
-           pass
     if data:
         #cdf = pycdf.CDF(str(cdf_filename))
         #cdf.readonly(False)
