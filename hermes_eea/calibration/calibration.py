@@ -51,7 +51,7 @@ def process_file(data_filename: Path) -> list:
     output_files = []
 
     # Calibrate the Input File
-    calibrated_file = calibrate_file(filename)
+    calibrated_file = calibrate_file(data_filename)
     output_files.append(calibrated_file)
 
     # Add Plots to the Output Files if we want
