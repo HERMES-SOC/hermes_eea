@@ -6,10 +6,9 @@ from astropy.time import Time
 from hermes_core.timedata import HermesData
 from astropy.nddata import NDData
 from ndcube import NDCube, NDCollection
-from hermes_eea.util.time.iso_epoch import epoch_to_iso_obj, epoch_to_eea_iso, epoch_to_iso
 import numpy as np
 from astropy.wcs import WCS
-
+from spacepy.pycdf import Library
 class Hermes_EEA_Data_Processor:
     """
     This class plays the role of that the Write* classes provide in FPI
@@ -20,14 +19,17 @@ class Hermes_EEA_Data_Processor:
         self.EEA = myEEA
         self.raw_counts = astropy_units.def_unit("raw instrument counts")
     def build_HermesData(self):
-        iso_times = Time(epoch_to_iso(self.EEA.Epoch[:]), scale='utc')
+        # cdf:
+        # iso_str_times = Time(epoch_to_iso(self.EEA.Epoch[:]), scale='utc')
+        # cdflib -> astropy
+        iso_datetimes = Time([Library().tt2000_to_datetime(e) for e in self.EEA.Epoch[:]])
         ts_1d_uQ = TimeSeries(
-            time=iso_times,
+            time=iso_datetimes,
             data={"hermes_eea_stats": astropy_units.Quantity(self.EEA.stats, "gauss", dtype=np.uint16)}
         )  # this works
         self._hermes_eea_spectra()
         bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
-        ts_justTime = TimeSeries(time=iso_times)
+        ts_justTime = TimeSeries(time=iso_datetimes)
 
         self.hermes_eea_data = HermesData(timeseries=ts_1d_uQ, spectra=self.multiple_spectra, meta=bare_attrs)
         self.hermes_eea_data.timeseries['hermes_eea_stats'].meta.update({"CATDESC": "Sum of skymap for each sweep"})
