@@ -220,9 +220,10 @@ def l0_sci_data_to_cdf(
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
         most_active = np.where(np.array(myEEA.stats) > 150)
 
-        example_start_times = Time(
-            [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
-        )
+        #example_start_times = Time(
+        #    [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
+        #)
+
         n_packets = len(myEEA.Epoch)
 
         hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
@@ -284,33 +285,3 @@ def read_calibration_file(calib_filename: Path):
         calib.deflections.append(int(line[10:12], 16))
 
 
-def retrieve_canned_attributes():
-    input_attrs = {
-        "DOI": "https://doi.org/<PREFIX>/<SUFFIX>",
-        "Data_level": "L1>Level 1",  # NOT AN ISTP ATTR
-        "Data_version": "0.0.1",
-        "Descriptor": "EEA>Electron Electrostatic Analyzer",
-        "Data_product_descriptor": "odpd",
-        "HTTP_LINK": [
-            "https://spdf.gsfc.nasa.gov/istp_guide/istp_guide.html",
-            "https://spdf.gsfc.nasa.gov/istp_guide/gattributes.html",
-            "https://spdf.gsfc.nasa.gov/istp_guide/vattributes.html",
-        ],
-        "Instrument_mode": "default",  # NOT AN ISTP ATTR
-        "Instrument_type": "Electric Fields (space)",
-        "LINK_TEXT": ["ISTP Guide", "Global Attrs", "Variable Attrs"],
-        "LINK_TITLE": ["ISTP Guide", "Global Attrs", "Variable Attrs"],
-        "MODS": [
-            "v0.0.0 - Original version.",
-            "v1.0.0 - Include trajectory vectors and optics state.",
-            "v1.1.0 - Update metadata: counts -> flux.",
-            "v1.2.0 - Added flux error.",
-            "v1.3.0 - Trajectory vector errors are now deltas.",
-        ],
-        "PI_affiliation": "HERMES",
-        "PI_name": "HERMES SOC",
-        "TEXT": "Valid Test Case",
-        "VATTRS": ["stats", "energies"],
-    }
-
-    return input_attrs
