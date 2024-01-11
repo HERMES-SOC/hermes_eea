@@ -1,6 +1,7 @@
 import pytest
 import os.path
 from pathlib import Path
+import shutil
 import tempfile
 import ccsdspy
 import hermes_eea.calibration as calib
@@ -13,6 +14,17 @@ import sys
 def small_level0_file(tmp_path_factory):
     fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023042-000000_v0.bin"))
     return fn
+
+
+def test_process_file(small_level0_file):
+    """Test the boilerplate of the file processing function"""
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        # Create a Temp Copy of the Original
+        temp_test_file_path = Path(tmpdirname, small_level0_file.name)
+        shutil.copy(small_level0_file, temp_test_file_path)
+        # Process the File
+        output_files = calib.process_file(temp_test_file_path)
+        print(output_files)
 
 
 def test_calibrate_file(small_level0_file):

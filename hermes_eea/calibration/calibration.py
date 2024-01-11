@@ -50,8 +50,11 @@ def process_file(data_filename: Path) -> list:
     log.info(f"Processing file {data_filename}.")
     output_files = []
 
+    # Get the Directory of the File
+    destination_dir = data_filename.parent
+
     # Calibrate the Input File
-    calibrated_file = calibrate_file(data_filename)
+    calibrated_file = calibrate_file(data_filename, destination_dir)
     output_files.append(calibrated_file)
 
     # Add Plots to the Output Files if we want
