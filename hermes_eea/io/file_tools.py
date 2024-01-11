@@ -1,6 +1,7 @@
 from ccsdspy import FixedLength
 import numpy as np
 import os
+
 """
 This module provides a generic file reader.
 """
@@ -25,8 +26,8 @@ def read_file(data_filename):
     --------
     """
     try:
-       with open(data_filename) as fh:
-          return fh.readlines()
+        with open(data_filename) as fh:
+            return fh.readlines()
     except Exception:
         raise Exception("Could not find: " + os.path.abspath(data_filename))
 
