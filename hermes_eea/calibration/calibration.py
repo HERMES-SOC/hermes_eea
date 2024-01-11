@@ -17,7 +17,7 @@ import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 # cdflib -> spacepy
-from spacepy.pycdf import Library
+from spacepy.pycdf import lib
 from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
 from astropy.time import Time
 
@@ -209,7 +209,7 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path, destination_dir: Pat
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
         most_active = np.where(np.array(myEEA.stats) > 150)
 
-        example_start_times = Time([Library().tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]])
+        example_start_times = Time([lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]])
         n_packets = len(myEEA.Epoch)
 
         hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
