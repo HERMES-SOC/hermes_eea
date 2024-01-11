@@ -5,13 +5,11 @@ __author__ = "Richard Strub <richard.f.strub@nasa.gov>"
 import numpy as np
 
 
-
 def helpConvertEEA(decoded):
     coarse = np.uint(decoded["SHCOARSE"])
     fine = np.uint(decoded["SHFINE"])
     epoch = converting_ccsds_times_to_cdf(coarse, fine)
     return epoch
-
 
 
 def converting_ccsds_times_to_cdf(coarse, fine):
@@ -34,5 +32,3 @@ def converting_ccsds_times_to_cdf(coarse, fine):
     epoch = p1 + p2
     result = np.uint64(epoch - tai_time["taiEpoch_tt2000"])
     return result
-
-

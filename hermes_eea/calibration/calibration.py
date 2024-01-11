@@ -49,11 +49,11 @@ def process_file(data_filename: Path) -> list:
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
-    
+
     # Calibrate the Input File
     calibrated_file = calibrate_file(filename)
     output_files.append(calibrated_file)
-    
+
     # Add Plots to the Output Files if we want
     #  data_plot_files = plot_file(data_filename)
     #  calib_plot_files = plot_file(calibrated_file)
@@ -223,9 +223,9 @@ def l0_sci_data_to_cdf(
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
         most_active = np.where(np.array(myEEA.stats) > 150)
 
-        #example_start_times = Time(
+        # example_start_times = Time(
         #    [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
-        #)
+        # )
 
         n_packets = len(myEEA.Epoch)
 
@@ -286,5 +286,3 @@ def read_calibration_file(calib_filename: Path):
     for line in lines:
         calib.energies.append(int(line[8:10], 16))
         calib.deflections.append(int(line[10:12], 16))
-
-
