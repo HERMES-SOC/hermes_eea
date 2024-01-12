@@ -35,7 +35,12 @@ __all__ = [
 def process_file(data_filename: Path) -> list:
     """
     This is the entry point for the pipeline processing.
-    It runs all of the various processing steps required.
+    It runs all of the various processing steps required
+    to create a L1A Hermes CDF File
+    calls:
+        CCSDSPY
+        A Custom EEA SkymapFactory
+        HermesData
 
     Parameters
     ----------
@@ -101,7 +106,7 @@ def calibrate_file(data_filename: Path, destination_dir) -> Path:
         file_metadata["instrument"] == hermes_eea.INST_NAME
         and file_metadata["level"] == "l0"
     ):
-        # because of error handling, no test of data is necessary here.
+        # call CCSDSPY to parse our packets.
         data = parse_l0_sci_packets(data_filename)
         level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
         output_filename = level1_filename
@@ -205,9 +210,6 @@ def l0_sci_data_to_cdf(
     # this is transferring name.bin to name.cdf
     file_metadata = parse_science_filename(original_filename.name)
 
-    # coarse = data["SHCOARSE"][idx]
-    # fine = data["SHFINE"][idx]
-    # time = convert_packet_time_to_datetime(coarse, fine)
     cdf_filename = original_filename.parent / create_science_filename(
         file_metadata["instrument"],
         file_metadata["time"],
@@ -215,27 +217,31 @@ def l0_sci_data_to_cdf(
         f'1.0.{file_metadata["version"]}',
     )
     if data:
-        # cdf = pycdf.CDF(str(cdf_filename))
-        # cdf.readonly(False)
 
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
 
         myEEA = EEA(file_metadata)
-        # This populates so doesn't have to return much
+        # SkymapFactory, now as does FPI, also populates my EEA data model
         SkymapFactory(data, calib.energies, calib.deflections, myEEA)
-        most_active = np.where(np.array(myEEA.stats) > 150)
 
+        # In the beginning, testing phase of this project, while we adjust things.
+        # This will show us which packets have a workable amount of data
+        most_active = np.where(np.array(myEEA.stats) > 150)
+        # these eample start times are also something I would like to keep around for a while
         # example_start_times = Time(
         #    [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
         # )
 
         n_packets = len(myEEA.Epoch)
 
+        # https://hermes-core.readthedocs.io/en/latest/user-guide/reading_writing_data.html
+        # https://hermes-core.readthedocs.io/en/latest/generated/api/hermes_core.timedata.HermesData.html#hermes_core.timedata.HermesData
         hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
         hermes_eea_factory.build_HermesData()
 
         try:
+            # this writes out the data to CDF file format
             cdf_path = hermes_eea_factory.hermes_eea_data.save(
                 str(destination_dir), True
             )

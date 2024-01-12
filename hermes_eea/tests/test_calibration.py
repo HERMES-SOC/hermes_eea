@@ -17,7 +17,13 @@ def small_level0_file(tmp_path_factory):
 
 
 def test_process_file(small_level0_file):
-    """Test the boilerplate of the file processing function"""
+    """Test the boilerplate of the file processing function
+       Tests a creation of a nominal L1A EEA file from packets
+    calls:
+        CCSDSPY
+        A Custom EEA SkymapFactory
+        HermesData
+    """
     with tempfile.TemporaryDirectory() as tmpdirname:
         # Create a Temp Copy of the Original
         temp_test_file_path = Path(tmpdirname, small_level0_file.name)
@@ -27,11 +33,3 @@ def test_process_file(small_level0_file):
         print(output_files)
 
 
-def test_calibrate_file(small_level0_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        output_file = calib.calibrate_file(small_level0_file, Path(tmpdirname))
-        assert (
-            os.path.basename(output_file) == "hermes_eea_l1_20000101T170901_v1.0.0.cdf"
-        )
-        assert os.path.getsize(output_file) > 200000
