@@ -31,5 +31,3 @@ def test_process_file(small_level0_file):
         # Process the File
         output_files = calib.process_file(temp_test_file_path)
         print(output_files)
-
-

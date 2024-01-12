@@ -217,7 +217,6 @@ def l0_sci_data_to_cdf(
         f'1.0.{file_metadata["version"]}',
     )
     if data:
-
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
         read_calibration_file(calibration_file)
 
