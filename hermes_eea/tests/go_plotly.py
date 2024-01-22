@@ -8,6 +8,28 @@ os.environ['CDF_LIB'] = '/Users/rstrub/Work-FPI/cdf37_0-dist/src/lib'
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 from spacepy import pycdf
+from spacepy.pycdf import lib
+from astropy.time import Time
+
+def iso_obj_to_epoch(trange):
+    """
+    ISO to CDF EPOCH:
+    cdflib.epochs.CDFepoch.parse('2012-01-01T01:01:01.000000000')
+
+    :param trange: a list, typically 2, of datetime objects
+    :return:18 digit epoch times for CDF
+    """
+    converted = []
+    for t in trange:
+        #dateString = t.strftime("%Y-%m-%dT%H:%M:%S.000000000")
+        dateString = t.strftime("%Y-%m-%dT%H:%M:%S.%f000")
+        try:
+            c = cdflib.epochs.CDFepoch.parse(dateString)
+            converted.append(c)
+        except ValueError as e:
+            print(t + " This time range value doesn't look too kosher...", file=stderr)
+        # exit(1)
+    return converted
 
 def read_data(file):
   try:
@@ -26,12 +48,19 @@ def diff(a,b):
    else:
        return 0
 
-def tolerance(y1,y2):
 
-    tolerance = abs(y1.max() - y2.max())
-    tolerance = .01 # 1 percent
-    tolerance = .0004 # 1 percent
-    tolerance = 0
+def tolerance(y1,y2, tolerance):
+    '''
+    only show the data points that differ greater than some tolerance
+    Parameters
+    ----------
+    y1 variable x from golden file
+    y2 variable x from artifact
+    tolerance may be different for each var
+    Returns
+    -------
+
+    '''
 
     yy1 = []
     yy2 = []
@@ -85,9 +114,6 @@ def draw_plot(y1,y2,x_axis,variable):
         secondary_y=True,
     )
 
-    #fig.add_trace( go.Scatter(x=orgx, y=orgpy, mode="markers", marker=dict( color="blue", size=6), name="py org data"), secondary_y=True,)
-    #fig.add_trace( go.Scatter(x=orgx, y=orgidl, mode="markers", marker=dict( color="black", size=6), name="idl org data"), secondary_y=True,)
-    
     # Add figure title
     fig.update_layout(
         title_text=variable
@@ -95,12 +121,37 @@ def draw_plot(y1,y2,x_axis,variable):
     
     # Set x-axis title
     fig.update_xaxes(title_text="n")
-    
-    # Set y-axes titles
-    fig.update_yaxes(title_text="<b>primary</b> yaxis title", secondary_y=True)
-    fig.update_yaxes(title_text="<b>secondary</b> yaxis title", secondary_y=True)
-    
+
     fig.show()
+
+def arange_plot(nth,variables,tol):
+    var = nth
+    variable = variables[var]
+    x_axis_length = mycdf[variables[var]].shape[0]
+    orgx = np.arange(0, x_axis_length, 1)
+
+    [y1, y2] = prepare_data(variable, x_axis_length)
+    x = 1
+    for n in y1.shape:
+        x = x * n
+    flat_y1 = y1.reshape((x))
+    flat_y2 = y2.reshape((x))
+    [tol_y1, tol_y2, remaining_x] = tolerance(flat_y1, flat_y2, tol)
+
+    draw_plot(tol_y1, tol_y2, remaining_x, variable)
+
+def datetime_plot(nth,variables,tol):
+    var = nth
+    variable = variables[var]
+    x_axis_length = mycdf[variables[var]].shape[0]
+    [y1, y2] = prepare_data(variable, x_axis_length)
+    y1_epochs = [lib.datetime_to_tt2000(e) for e in y1]
+    y2_epochs = [lib.datetime_to_tt2000(e) for e in y1]
+
+    [tol_y1, tol_y2, remaining_x] = tolerance(y1_epochs, y2_epochs, tol)
+    draw_plot(tol_y1, tol_y2, remaining_x, variable)
+
+
 
 
 
@@ -115,14 +166,13 @@ for item in mylist:
 
 variables = mylist
 
-# graph stats:
-var = 1
-variable = variables[var]
-x_axis_length = mycdf[variables[var]].shape[0]
-orgx = np.arange(0,x_axis_length,1)
+# Epoch difference >= 1.0:
+datetime_plot(0,variables,1.0)
 
-[y1,y2] = prepare_data(variable,  x_axis_length)
-[tol_y1,tol_y2,remaining_x] = tolerance(y1,y2)
+# Stats difference >= 0:
+arange_plot(1,variables,0.0)
 
-draw_plot(y1,y2,remaining_x,variable)
+#hermes_eea_accum difference > ...:
+arange_plot(4,variables,0.0000001)
+
 
