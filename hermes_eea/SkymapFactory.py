@@ -16,21 +16,29 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     # 'hermes_eea_sector_index', 'hermes_eea_sector_label'])
 
     # science_data:
+    # In the test data, several 'integrates' occurred signified by
+    # a SHEID of 0. The start of a science data energy sweep is when
+    # SHEID is 1
     start_of_good_data = np.where(l0_cdf["SHEID"][:] == 1)[0][0]
-    integrates_at_end = np.where(
-        l0_cdf["SHEID"][start_of_good_data:] == 0
-    )  # has 63 values
+    # how much trailing not science data:
+    integrates_at_end = np.where(l0_cdf["SHEID"][start_of_good_data:] == 0)
     # We are expecting integrates to be only at the beginning
 
     # The Science Data:
     stepper_table_packets = (np.where(l0_cdf["SHEID"][:] > 0))[0]
     return_package = {}
+    # the packets start when STEP is 0
+    # the packets are sciencedata when SHEID is 1
+    # nominally stepper_table_packets[0] will be 0 (no integrates at the beginning)
     beginning_packets = (
         np.where((l0_cdf["STEP"][stepper_table_packets[0] :]) == 0)[0]
         + stepper_table_packets[0]
     )
-    package = []
 
+    # This is done this way so  that we can send this package to multiprocessor like:
+    #   with Pool(n_pool) as p:
+    #             b = p.starmap(do_EEA__packet, package)
+    package = []
     epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
     try:
         for ptr in range(0, len(beginning_packets)):

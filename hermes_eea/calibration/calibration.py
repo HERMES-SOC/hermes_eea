@@ -38,19 +38,30 @@ def process_file(data_filename: Path) -> list:
     It runs all of the various processing steps required
     to create a L1A Hermes CDF File
     calls:
-        CCSDSPY
+        calibrate_file()
+           parse_science
+           CCSDSPY (parse_L0_sci_packets())
+           l0_sci_data_to_cdf()
+                SkymapFactory()
+                Use HermesData to populate CDF output file
+                Write the File
         A Custom EEA SkymapFactory
         HermesData
 
     Parameters
     ----------
     data_filename: str
-        Fully specificied filename of an input file
+        Fully specificied filename of an input file.
+        The file contents:
+            Traditional binary packets in CCSDS format
+
 
     Returns
     -------
     output_filenames: list
         Fully specificied filenames for the output files.
+    The file contents:
+        CDF formatted file with n packets iincluding time and [41,4,32] skymap.
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []

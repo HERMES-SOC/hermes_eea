@@ -6,6 +6,21 @@ import numpy as np
 
 
 def helpConvertEEA(decoded):
+    """
+
+    Parameters
+    ----------
+    decoded - this is the binary packets parsed by CCSDSPY using
+    config file: hermes_EEA_sci_packet_def.csv. Arrays usually include
+    APID, then a COARSE and FINE time that we translate into CDF EPOCH
+    according to examples in original IDL FPI Ground System code.
+
+    Returns
+    -------
+    Integer time. Something we think of as CDF EPOCH time that is fairly
+    easy to then convert  int o ISO.
+
+    """
     coarse = np.uint(decoded["SHCOARSE"])
     fine = np.uint(decoded["SHFINE"])
     epoch = converting_ccsds_times_to_cdf(coarse, fine)
@@ -13,6 +28,21 @@ def helpConvertEEA(decoded):
 
 
 def converting_ccsds_times_to_cdf(coarse, fine):
+    """
+    Parameters
+    ----------
+    coarse - CCSDSPY time parm
+    fine     CCSDSPY time parm
+    CCSDS telemetry files often include this COARSE and FINE times
+    that we translate into CDF EPOCH according to examples in original
+    IDL FPI Ground System code.
+
+    Returns
+    -------
+    CDF-EPOCH time. Number of millisecs since 0 AD.
+    tai_time["taiEpoch_tt2000"] for FPI was different than for EEA.
+    I am not sure if this was chosen arbitrarily or through direction from Hermes SOC
+    """
     epoch = np.zeros(coarse.shape[0], dtype=np.uint)
     p1 = np.zeros(coarse.shape[0], dtype=np.uint)
     p2 = np.zeros(coarse.shape[0], dtype=np.uint)

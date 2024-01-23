@@ -1,4 +1,8 @@
 class EEA:
+    """
+    holds the data after Skymap creation and before CDF file population
+    """
+
     def __init__(self, conf):
         self.Epoch = []  # the first of each sweep, the first of each of the 164 times,
         #                 when hermes_eea_intgr_or_stepper = 1 and  hermes_eea_step_counter = 0
@@ -22,7 +26,7 @@ class EEA:
         try:
             return record[attrname]
         except KeyError:
-            # occasionally no value is returned see: compressionLoss is only in moms brst
+            # occasionally no value is returned
             if self.name_align(attrname) in self.default_obj:
                 return self.default_obj[self.name_align(attrname)]
 
