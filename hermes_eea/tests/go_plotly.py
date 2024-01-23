@@ -173,8 +173,8 @@ if __name__ == "__main__":
                 mycdf[item].shape,
                 len(newcdf[item[:]]),
                 newcdf[item].shape,
-                mycdf[item].meta['VAR_TYPE'],
-                newcdf[item].meta['VAR_TYPE']
+                mycdf[item].meta["VAR_TYPE"],
+                newcdf[item].meta["VAR_TYPE"],
             )
         except KeyError:
             print("Files have different variables:")
