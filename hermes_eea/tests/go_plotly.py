@@ -159,7 +159,7 @@ if __name__ == "__main__":
 
     newcdf = read_data(artifact)
     mycdf = read_data(golden)
-    if mycdf == None:
+    if mycdf is None:
         print("Could not read:", golden)
         exit(1)
     mylist = [item[0] for item in list(mycdf.items())]
