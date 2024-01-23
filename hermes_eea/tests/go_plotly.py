@@ -173,6 +173,8 @@ if __name__ == "__main__":
                 mycdf[item].shape,
                 len(newcdf[item[:]]),
                 newcdf[item].shape,
+                mycdf[item].meta['VAR_TYPE'],
+                newcdf[item].meta['VAR_TYPE']
             )
         except KeyError:
             print("Files have different variables:")
@@ -191,6 +193,11 @@ if __name__ == "__main__":
 
     # Stats difference >= 0:
     arange_plot(1, variables, 0.0)
+    # steptimes difference >= 0:
+    arange_plot(2, variables, 1.0)
+    arange_plot(3, variables, 1.0)
 
     # hermes_eea_accum difference > ...:
     arange_plot(4, variables, 0.0000001)
+    newcdf.close()
+    mycdf.close()
