@@ -8,7 +8,7 @@ import hermes_eea.calibration as calib
 from hermes_eea import _data_directory, stepper_table
 from hermes_core.util.util import create_science_filename, parse_science_filename
 import sys
-
+from spacepy import pycdf
 
 @pytest.fixture(scope="session")  # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
@@ -31,3 +31,7 @@ def test_process_file(small_level0_file):
         # Process the File
         output_files = calib.process_file(temp_test_file_path)
         print(output_files)
+
+        assert os.path.getsize(output_files[0]) > 275000
+        cdf = pycdf.CDF(output_files[0])
+        assert len(cdf['Epoch'][:])  == 18

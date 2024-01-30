@@ -62,10 +62,10 @@ class Hermes_EEA_Data_Processor:
     def _hermes_eea_spectra(self):
         """
         EEA multi-dimensional variables
-        Returns
-        -------
-
+        This is a solution for loading multi-dimension variables and their metadata into CDF
+        HermesData is used for "regular" time-series variables such as the Epoch and stats variables above.
         """
+
         self.multiple_spectra = NDCollection(
             [
                 (

@@ -9,15 +9,24 @@ N_DEFLECTIONS = 4
 N_AZIMUTH = 32
 
 
-# This may eventually be handled in a python multiprocessor module instance:
 def SkymapFactory(l0_cdf, energies, deflections, myEEA):
-    # ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
-    # 'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
-    # 'hermes_eea_sector_index', 'hermes_eea_sector_label'])
+    """ This may eventually be handled in a python multiprocessor module instance:
+    ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
+     'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
+     'hermes_eea_sector_index', 'hermes_eea_sector_label'])
 
-    # science_data:
-    # In the test data, several 'integrates' occurred signified by
-    # a SHEID of 0. The start of a science data energy sweep is when
+    Parameters
+    -----------
+    l0_cdf - output of CCSDS.py - each defined variable is parsed into packet arrays
+    energies - the energy profile
+    deflections - the 4 angles at each energy. Both of these are extracted from the stepper table.
+    myEEA - a class where I put the data before loading it into the CDF.
+
+    science_data:
+    In the test data, several 'integrates' occurred signified by
+     a SHEID of 0. The start of a science data energy sweep is when
+    """
+
     # SHEID is 1
     start_of_good_data = np.where(l0_cdf["SHEID"][:] == 1)[0][0]
     # how much trailing not science data:

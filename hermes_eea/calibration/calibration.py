@@ -96,20 +96,9 @@ def calibrate_file(data_filename: Path, destination_dir) -> Path:
     output_filename: Path
         Fully specificied filename of the output file.
 
-    Examples
-    --------
-    >>> from hermes_eea.calibration import calibrate_file
-    >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
     """
     log.info(f"Calibrating file:{data_filename}.")
-    if not destination_dir.is_dir():
-        raise OSError(
-            "Output directory: " + str(destination_dir) + ". Please create first."
-        )
-        return
-    output_filename = (
-        data_filename  # TODO: for testing, the output filename MUST NOT same as input
-    )
+
     file_metadata = parse_science_filename(data_filename.name)
 
     # check if level 0 binary file, if so call appropriate functions
