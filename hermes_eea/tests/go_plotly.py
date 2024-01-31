@@ -3,8 +3,6 @@ import sys
 import numpy as np
 import math
 
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
 from spacepy import pycdf
 from spacepy.pycdf import lib
 from astropy.time import Time
@@ -154,6 +152,9 @@ def datetime_plot(nth, variables, tol):
 
 
 if __name__ == "__main__":
+    import plotly.graph_objects as go
+    from plotly.subplots import make_subplots
+
     golden = "hermes_eea/tests/hermes_eea_l1_20000101T170901_v1.0.0.cdf"
     artifact = "/Users/rstrub/Downloads/processed-files/hermes_eea_l1_20000101T170901_v1.0.0.cdf"
     artifact = "/Users/rstrub/hermes_eea_l1_20000101T170901_v1.0.0.cdf"
