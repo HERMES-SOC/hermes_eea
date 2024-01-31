@@ -156,6 +156,7 @@ def datetime_plot(nth, variables, tol):
 if __name__ == "__main__":
     golden = "hermes_eea/tests/hermes_eea_l1_20000101T170901_v1.0.0.cdf"
     artifact = "/Users/rstrub/Downloads/processed-files/hermes_eea_l1_20000101T170901_v1.0.0.cdf"
+    artifact = "/Users/rstrub/hermes_eea_l1_20000101T170901_v1.0.0.cdf"
 
     newcdf = read_data(artifact)
     mycdf = read_data(golden)

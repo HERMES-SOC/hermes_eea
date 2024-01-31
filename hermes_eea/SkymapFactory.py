@@ -10,7 +10,7 @@ N_AZIMUTH = 32
 
 
 def SkymapFactory(l0_cdf, energies, deflections, myEEA):
-    """ This may eventually be handled in a python multiprocessor module instance:
+    """This may eventually be handled in a python multiprocessor module instance:
     ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
      'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
      'hermes_eea_sector_index', 'hermes_eea_sector_label'])
@@ -77,7 +77,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
         packet_contents = do_eea_packet(*pckt)
         if packet_contents is not None:
             result.append(packet_contents)
-    myEEA.populate(myEEA, result)
+    myEEA.populate(result)
 
 
 def do_eea_packet(

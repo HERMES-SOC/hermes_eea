@@ -6,7 +6,7 @@ import os
 This module provides a generic file reader.
 """
 
-__all__ = ["read_file"]
+__all__ = ["read_file", "read_ccsds"]
 
 
 def read_file(data_filename):

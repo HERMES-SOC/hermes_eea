@@ -30,16 +30,15 @@ class EEA:
             if self.name_align(attrname) in self.default_obj:
                 return self.default_obj[self.name_align(attrname)]
 
-    def populate(self, myEEA, skymap):
-        packet = 0
+    def populate(self, skymap):
         for record in skymap:
-            myEEA.usec.append(record["usec"])
-            myEEA.Epoch.append(record["Epoch"])
-            myEEA.ACCUM.append(record["counts"])
-            myEEA.PulseA.append(record["pulse_a"])
-            myEEA.PulseB.append(record["pulse_b"])
-            myEEA.SunAngles.append(record["sun_angles"])
-            myEEA.EnergyLabels.append(record["energies"])
-            myEEA.Counter1.append(record["counter1"])
-            myEEA.Counter2.append(record["counter2"])
-            myEEA.stats.append(record["stats"])
+            self.Epoch.append(record["Epoch"])
+            self.usec.append(self.append("usec", record))
+            self.ACCUM.append(self.append("counts", record))
+            self.PulseA.append(self.append("pulse_a", record))
+            self.PulseB.append(self.append("pulse_b", record))
+            self.SunAngles.append(self.append("sun_angles", record))
+            self.EnergyLabels.append(self.append("energies", record))
+            self.Counter1.append(record["counter1"])
+            self.Counter2.append(record["counter2"])
+            self.stats.append(record["stats"])
