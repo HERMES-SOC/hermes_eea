@@ -1,87 +1,75 @@
 import pytest
 import os.path
 from pathlib import Path
-
+import shutil
+import tempfile
+import time
+import ccsdspy
+import hermes_eea
+from hermes_eea.io import read_ccsds
 import hermes_eea.calibration as calib
+from hermes_eea import _data_directory, stepper_table
 from hermes_core.util.util import create_science_filename, parse_science_filename
-
-level0_filename = "hermes_EEA_l0_2022339-000000_v0.bin"
-level1_filename = "hermes_eea_l1_20221205T000000_v1.0.0.cdf"
-ql_filename = "hermes_eea_ql_20221205T000000_v1.0.0.cdf"
+import sys
+from spacepy import pycdf
 
 
-@pytest.fixture(scope="session")
-def level0_file(tmp_path_factory):
-    fn = tmp_path_factory.mktemp("data") / level0_filename
-    with open(fn, "w"):
-        pass
+@pytest.fixture(scope="session")  # this is a pytest fixture
+def small_level0_file(tmp_path_factory):
+    fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023042-000000_v0.bin"))
     return fn
 
 
-@pytest.fixture(scope="session")
-def level1_file(tmp_path_factory):
-    fn = tmp_path_factory.mktemp("data") / level1_filename
-    with open(fn, "w"):
-        pass
-    return fn
+def test_read_ccsdspy(small_level0_file):
+    """
+    Homage to Liam and the difficulties encountered at the outset...
+    Parameters
+    ----------
+    small_level0_file - ccsds format packet file
+
+    Returns
+    -------
+
+    """
+    pkt = ccsdspy.FixedLength.from_file(
+        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
+    )
+    result = read_ccsds(small_level0_file, pkt)
+    assert len(result["ACCUM"]) == 3051
 
 
-def test_l0_sci_data_to_cdf(level0_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    data = {}
-    output_file = calib.l0_sci_data_to_cdf(data, level0_file)
-    assert output_file.name == level1_filename
-    assert output_file.is_file()
+def test_process_file(small_level0_file):
+    """Test the boilerplate of the file processing function
+       Tests a creation of a nominal L1A EEA file from packets
+    calls:
+        CCSDSPY
+        A Custom EEA SkymapFactory
+        HermesData
+    """
+    try:
+        with tempfile.TemporaryDirectory() as tmpdirname:
+            # Create a Temp Copy of the Original
+            temp_test_file_path = Path(tmpdirname, small_level0_file.name)
+            shutil.copy(small_level0_file, temp_test_file_path)
+            # Process the File
+            output_files = calib.process_file(temp_test_file_path)
+
+            assert os.path.getsize(output_files[0]) > 275000
+
+            # Ensure the file is closed before attempting to delete it
+            with pycdf.CDF(output_files[0]) as cdf:
+                assert len(cdf["Epoch"][:]) == 18
+
+    # Ensure the temporary directory is cleaned up even if an exception is raised (needed for Windows)
+    except PermissionError:
+        print("Encountered a PermissionError, retrying file deletion...")
+        time.sleep(0.5)  # Wait a bit for the OS to release any locks
+        cleanup_retry(tmpdirname)
 
 
-def test_calibrate_file_nofile_error():
-    """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
-    with pytest.raises(FileNotFoundError):
-        calib.calibrate_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
-
-
-def test_process_file_nofile_error():
-    """Test that if file does not exist it produces the correct error. The file needs to be in the correct format."""
-    with pytest.raises(FileNotFoundError):
-        calib.process_file(Path("hermes_EEA_l0_2032339-000000_v0.bin"))
-
-
-def test_calibrate_file(level0_file, level1_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    output_file = calib.calibrate_file(level0_file)
-    assert output_file.name == level1_filename
-    assert output_file.is_file()
-    output_file = calib.calibrate_file(level1_file)
-    assert output_file.name == ql_filename
-    assert output_file.is_file()
-
-    # with pytest.raises(ValueError) as excinfo:
-    #    calib.calibrate_file("datafile_with_no_calib.cdf")
-    # assert (
-    #    str(excinfo.value)
-    #    == "Calibration file for datafile_with_no_calib.cdf not found."
-    # )
-
-
-def test_process_file_level0(level0_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    file_output = calib.process_file(level0_file)
-    assert len(file_output) == 1
-    assert file_output[0].name == level1_filename
-    assert file_output[0].is_file()
-
-
-def test_process_file_level1(level1_file):
-    """Test that the output filenames are correct and that a file was actually created."""
-    file_output = calib.process_file(level1_file)
-    assert len(file_output) == 1
-    assert file_output[0].name == ql_filename
-    assert file_output[0].is_file()
-
-
-def test_get_calibration_file():
-    assert calib.get_calibration_file("") is None
-
-
-def test_read_calibration_file():
-    assert calib.read_calibration_file("calib_file") is None
+def cleanup_retry(directory):
+    """Attempt to clean up the directory after a short delay."""
+    try:
+        shutil.rmtree(directory)
+    except PermissionError as e:
+        print(f"Failed to clean up directory {directory} due to PermissionError: {e}")

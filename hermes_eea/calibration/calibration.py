@@ -1,17 +1,27 @@
 """
 A module for all things calibration.
 """
+
+from datetime import datetime, timezone, timedelta
 import random
 import os.path
 from pathlib import Path
-
+import sys
 import ccsdspy
+import numpy as np
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
-
 import hermes_eea
 from hermes_eea.io import read_file
+import hermes_eea.calibration as calib
+from hermes_eea.io.EEA import EEA
+from hermes_eea.SkymapFactory import SkymapFactory
+
+# cdflib -> spacepy
+from spacepy.pycdf import lib
+from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
+from astropy.time import Time
 
 __all__ = [
     "process_file",
@@ -26,23 +36,45 @@ __all__ = [
 def process_file(data_filename: Path) -> list:
     """
     This is the entry point for the pipeline processing.
-    It runs all of the various processing steps required.
+    It runs all of the various processing steps required
+    to create a L1A Hermes CDF File
+    calls:
+        calibrate_file()
+           parse_science
+           CCSDSPY (parse_L0_sci_packets())
+           l0_sci_data_to_cdf()
+                SkymapFactory()
+                Use HermesData to populate CDF output file
+                Write the File
+        A Custom EEA SkymapFactory
+        HermesData
 
     Parameters
     ----------
     data_filename: str
-        Fully specificied filename of an input file
+        Fully specificied filename of an input file.
+        The file contents:
+            Traditional binary packets in CCSDS format
+
 
     Returns
     -------
     output_filenames: list
         Fully specificied filenames for the output files.
+    The file contents:
+        CDF formatted file with n packets iincluding time and [41,4,32] skymap.
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
 
-    calibrated_file = calibrate_file(data_filename)
+    # Get the Directory of the File
+    destination_dir = data_filename.parent
+
+    # Calibrate the Input File
+    calibrated_file = calibrate_file(data_filename, destination_dir)
     output_files.append(calibrated_file)
+
+    # Add Plots to the Output Files if we want
     #  data_plot_files = plot_file(data_filename)
     #  calib_plot_files = plot_file(calibrated_file)
 
@@ -50,7 +82,7 @@ def process_file(data_filename: Path) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path) -> Path:
+def calibrate_file(data_filename: Path, destination_dir) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
@@ -65,15 +97,9 @@ def calibrate_file(data_filename: Path) -> Path:
     output_filename: Path
         Fully specificied filename of the output file.
 
-    Examples
-    --------
-    >>> from hermes_eea.calibration import calibrate_file
-    >>> level1_file = calibrate_file('hermes_EEA_l0_2022239-000000_v0.bin')  # doctest: +SKIP
     """
     log.info(f"Calibrating file:{data_filename}.")
-    output_filename = (
-        data_filename  # TODO: for testing, the output filename MUST NOT same as input
-    )
+
     file_metadata = parse_science_filename(data_filename.name)
 
     # check if level 0 binary file, if so call appropriate functions
@@ -81,12 +107,9 @@ def calibrate_file(data_filename: Path) -> Path:
         file_metadata["instrument"] == hermes_eea.INST_NAME
         and file_metadata["level"] == "l0"
     ):
-        #  data = parse_l0_sci_packets(data_filename)
-        data = {}
-        # test opening the file
-        with open(data_filename, "r") as fp:
-            pass
-        level1_filename = l0_sci_data_to_cdf(data, data_filename)
+        # call CCSDSPY to parse our packets.
+        data = parse_l0_sci_packets(data_filename)
+        level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
         output_filename = level1_filename
     elif (
         file_metadata["instrument"] == hermes_eea.INST_NAME
@@ -118,10 +141,8 @@ def calibrate_file(data_filename: Path) -> Path:
         # create an empty file for testing purposes
         with open(data_filename.parent / ql_filename, "w"):
             pass
-
-        # example log messages
-        log.info(f"Despiking removing {random.randint(0, 10)} spikes")
-        log.warning(f"Despiking could not remove {random.randint(1, 5)}")
+        # here
+        data = parse_l0_sci_packets(data_filename)
         output_filename = ql_filename
     else:
         raise ValueError(f"The file {data_filename} is not recognized.")
@@ -152,13 +173,15 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     log.info(f"Parsing packets from file:{data_filename}.")
 
     pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "EEA_sci_packet_def.csv")
+        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
     )
     data = pkt.load(data_filename)
     return data
 
 
-def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
+def l0_sci_data_to_cdf(
+    data: dict, original_filename: Path, destination_dir: Path
+) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
 
@@ -184,6 +207,8 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
     >>> data_packets = calib.parse_l0_sci_packets(data_filename)  # doctest: +SKIP
     >>> cdf_filename = calib.l0_sci_data_to_cdf(data_packets, data_filename)  # doctest: +SKIP
     """
+
+    # this is transferring name.bin to name.cdf
     file_metadata = parse_science_filename(original_filename.name)
 
     cdf_filename = original_filename.parent / create_science_filename(
@@ -192,18 +217,44 @@ def l0_sci_data_to_cdf(data: dict, original_filename: Path) -> Path:
         "l1",
         f'1.0.{file_metadata["version"]}',
     )
+    if data:
+        calibration_file = get_calibration_file(hermes_eea.stepper_table)
+        read_calibration_file(calibration_file)
 
-    # create an empty file for testing purposes
-    with open(cdf_filename, "w"):
-        pass
+        myEEA = EEA(file_metadata)
+        # SkymapFactory, now as does FPI, also populates my EEA data model
+        SkymapFactory(data, calib.energies, calib.deflections, myEEA)
 
-    return cdf_filename
+        # In the beginning, testing phase of this project, while we adjust things.
+        # This will show us which packets have a workable amount of data
+        most_active = np.where(np.array(myEEA.stats) > 150)
+        # these eample start times are also something I would like to keep around for a while
+        # example_start_times = Time(
+        #    [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
+        # )
+
+        n_packets = len(myEEA.Epoch)
+
+        # https://hermes-core.readthedocs.io/en/latest/user-guide/reading_writing_data.html
+        # https://hermes-core.readthedocs.io/en/latest/generated/api/hermes_core.timedata.HermesData.html#hermes_core.timedata.HermesData
+        hermes_eea_factory = Hermes_EEA_Data_Processor(myEEA)
+        hermes_eea_factory.build_HermesData()
+
+        try:
+            # this writes out the data to CDF file format
+            cdf_path = hermes_eea_factory.hermes_eea_data.save(
+                str(destination_dir), True
+            )
+        except Exception as e:
+            log.error(e)
+            sys.exit(2)
+
+    return cdf_path
 
 
 def get_calibration_file(data_filename: Path, time=None) -> Path:
     """
     Given a time, return the appropriate calibration file.
-
     Parameters
     ----------
     data_filename: str
@@ -218,7 +269,7 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Examples
     --------
     """
-    return None
+    return os.path.join(hermes_eea._calibration_directory, data_filename)
 
 
 def read_calibration_file(calib_filename: Path):
@@ -238,4 +289,9 @@ def read_calibration_file(calib_filename: Path):
     Examples
     --------
     """
-    return None
+    lines = read_file(os.path.join(calib_filename))
+    calib.energies = []
+    calib.deflections = []
+    for line in lines:
+        calib.energies.append(int(line[8:10], 16))
+        calib.deflections.append(int(line[10:12], 16))
