@@ -38,6 +38,18 @@ Overview
 This is a Python package for processing and analyzing data from the Electron Electrostatic Analyzer (EEA) instrument on the Lunar Gateway.
 The EEA provides measurements of low-energy electrons in the solar wind and in Earth’s deep magnetotail by measuring electron flux as functions of energy and direction.
 
+
+Testing Calibration Code in Pull Requests
+------------------------------------------
+Our CI/CD Pipeline is designed to validate the functionality of the calibration code within pull requests. Upon initiation, the pipeline executes the calibration code and verifies its successful operation without any errors. A successful execution results in the pipeline passing, and it automatically posts a comment on the pull request detailing the outcomes.
+
+The comment will include a zip file containing both the original and the calibrated versions of the file used in the process.
+
+For calibration, the pipeline relies on binary files located in the data directory. To test the calibration code with a new binary file, simply replace the existing test file in the data directory and submit a new pull request. The pipeline will then apply the calibration code to this new file.
+
+For comprehensive guidelines on testing the calibration code within our CI/CD framework, please read the `Workflow for Maintainers Documentation <https://hermes-eea.readthedocs.io/en/latest/dev-guide/maintainer_workflow.html>`.
+
+
 License
 -------
 
