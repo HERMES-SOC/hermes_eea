@@ -103,6 +103,14 @@ Now you need to push the changes you have made to the code to the open pull requ
 
 You might have to add ``--force`` if you rebased instead of adding new commits.
 
+Testing Calibration Code in Pull Requests
+------------------------------------------
+Our CI/CD Pipeline is designed to validate the functionality of the calibration code within pull requests. Upon initiation, the pipeline executes the calibration code and verifies its successful operation without any errors. A successful execution results in the pipeline passing, and it automatically posts a comment on the pull request detailing the outcomes.
+
+The comment will include a zip file containing both the original and the calibrated versions of the file used in the process.
+
+For calibration, the pipeline relies on binary files located in the data directory. To test the calibration code with a new binary file, simply replace the existing test file in the data directory and submit a new pull request. The pipeline will then apply the calibration code to this new file.
+
 IOssue Milestones and Labels
 ============================
 
