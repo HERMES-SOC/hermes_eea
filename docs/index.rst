@@ -5,7 +5,7 @@ This is the documentation for the hermes_eea Python package for processing and a
 
 
 .. toctree::
-   :maxdepth: 4
+   :maxdepth: 2
 
    about
    whatsnew/index
