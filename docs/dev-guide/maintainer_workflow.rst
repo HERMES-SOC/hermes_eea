@@ -10,6 +10,47 @@ Seeing as how you're a maintainer, you should be completely on top of the basic 
 
 .. _git workflow: https://docs.astropy.org/en/stable/development/workflow/development_workflow.html#development-workflow
 
+
+Testing Calibration Code via Pull Requests
+==========================================
+
+Our Calibration Continuous Integration/Continuous Deployment (CI/CD) Pipeline is specifically designed to ensure the functionality of calibration code changes introduced through pull requests. It tests it within the same AWS Processing Lambda function container that will run in the cloud.
+
+You can find the pipeline in the `.github/workflows` directory of the repository. The pipeline is written in YAML and is named `calibration.yml`.
+
+Automated Execution
+-------------------
+
+When a pull request is created against the `main` branch, the pipeline automatically executes the included calibration code. This step is crucial for verifying that the code operates correctly without any errors.
+
+Results in Comments
+-------------------
+
+If the execution is successful and free of errors, the pipeline marks the check as passed. It then automatically generates a comment on the pull request, which includes a zip file attachment. This file contains both the original and calibrated versions of the file, demonstrating the calibration's effect.
+
+If it fails, the pipeline marks the check as failed and you can further investigate the issue within the logs of the failed pipeline test.
+
+Calibration Data Files
+----------------------
+
+The calibration relies on specific binary files located in the project's ``data`` directory. To test new calibration code or changes:
+
+1. Replace the existing test file in the ``data`` directory with a new binary file.
+2. Submit a new pull request.
+
+The pipeline will recognize the new file and use it for testing the calibration code.
+
+Test File Specifications
+------------------------
+
+The test file should be a binary file that closely mirrors the data the calibration code will be applied to. It must follow the ``l0`` naming convention, such as ``hermes_EEA_l0_2023042-000000_v0.bin``.
+
+Pull Request Detection and Processing
+-------------------------------------
+
+When a pull request is made with a new file or changes to the calibration code, the pipeline automatically detects and uses the new or modified file for calibration testing. This ensures thorough vetting of code changes and maintains the system's reliability and accuracy.
+
+
 Integrating changes via the web interface (recommended)
 =======================================================
 
@@ -24,6 +65,7 @@ To check out a particular pull request to test out locally::
     $ git checkout pr/999
     Branch pr/999 set up to track remote branch pr/999 from upstream.
     Switched to a new branch 'pr/999'
+
 
 When to remove or combine/squash commits
 ----------------------------------------
@@ -102,14 +144,6 @@ Now you need to push the changes you have made to the code to the open pull requ
     $ git push git@github.com:<username>/hermes_eea.git HEAD:<name of branch>
 
 You might have to add ``--force`` if you rebased instead of adding new commits.
-
-Testing Calibration Code in Pull Requests
-------------------------------------------
-Our CI/CD Pipeline is designed to validate the functionality of the calibration code within pull requests. Upon initiation, the pipeline executes the calibration code and verifies its successful operation without any errors. A successful execution results in the pipeline passing, and it automatically posts a comment on the pull request detailing the outcomes.
-
-The comment will include a zip file containing both the original and the calibrated versions of the file used in the process.
-
-For calibration, the pipeline relies on binary files located in the data directory. To test the calibration code with a new binary file, simply replace the existing test file in the data directory and submit a new pull request. The pipeline will then apply the calibration code to this new file.
 
 IOssue Milestones and Labels
 ============================
