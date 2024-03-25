@@ -26,7 +26,7 @@ classifiers = [
     "Topic :: Scientific/Engineering :: Physics",
 ]
 dependencies = [
-  'hermes_core @ git+https://github.com/HERMES-SOC/hermes_core/',
+  'hermes_core @ git+https://github.com/dbarrous/hermes_core/',
   'ccsdspy @ git+https://github.com/ddasilva/ccsdspy.git'
 ]
 
