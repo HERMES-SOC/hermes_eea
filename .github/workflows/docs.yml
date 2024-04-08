@@ -11,11 +11,14 @@ on:
   workflow_dispatch: # For on demand runs
   schedule:
     - cron: 0 0 * * * # Scheduled run every day at midnight
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: public.ecr.aws/w5r9l1c8/dev-swsoc-docker-lambda-base:latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [3.9]
 
     steps:
     - uses: actions/checkout@v2
