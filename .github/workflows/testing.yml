@@ -30,23 +30,9 @@ jobs:
       run: |
         pip install pip setuptools wheel --upgrade
         pip install -e .[test]
-      if: ${{ !(matrix.platform == 'windows-latest' && matrix.python-version == '3.11') }}
 
-    # Set up CDF and run tests on Windows
-    - name: Install CDF on Windows
-      shell: cmd
+    - name: Run tests on Windows, Linux and MacOS
       run: pytest --pyargs hermes_eea --cov hermes_eea
-      # Skip Windows Python 3.11 tests until SpacePy is updated
-      if: ${{(matrix.platform == 'windows-latest' && matrix.python-version != '3.11')}}
-
-    - name: Run tests on Ubuntu and MacOS
-      run: pytest --pyargs hermes_eea --cov hermes_eea
-      env:
-        PLATFORM: ${{ matrix.platform }}
-      # Skip Windows Python 3.11 tests until SpacePy is updated
-      if: ${{ !(matrix.platform == 'windows-latest') }}
 
     - name: Upload coverage reports to Codecov with GitHub Action
       uses: codecov/codecov-action@v3
-      # Skip Windows Python 3.11 tests until SpacePy is updated
-      if: ${{ !(matrix.platform == 'windows-latest' && matrix.python-version == '3.11') }}
