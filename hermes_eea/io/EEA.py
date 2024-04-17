@@ -20,7 +20,7 @@ class EEA:
         self.ACCUM = []  # [41, 4, 32]. [ene, defl, accums]
         self.SunAngles = []  # [4,32] really just metadata
         self.EnergyLabels = []  # [41] really just metadata
-        self.stats = []  # [41] really just metadata
+        # self.stats = []  # [41] really just metadata
 
     def append(self, attrname, record):
         try:
@@ -35,10 +35,10 @@ class EEA:
             self.Epoch.append(record["Epoch"])
             self.usec.append(self.append("usec", record))
             self.ACCUM.append(self.append("counts", record))
-            self.PulseA.append(self.append("pulse_a", record))
-            self.PulseB.append(self.append("pulse_b", record))
+            #self.PulseA.append(self.append("pulse_a", record))
+            #self.PulseB.append(self.append("pulse_b", record))
             self.SunAngles.append(self.append("sun_angles", record))
             self.EnergyLabels.append(self.append("energies", record))
             self.Counter1.append(record["counter1"])
             self.Counter2.append(record["counter2"])
-            self.stats.append(record["stats"])
+            # no longer doing stats for abstract: self.stats.append(record["stats"])

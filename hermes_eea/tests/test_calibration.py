@@ -53,7 +53,7 @@ def test_process_file(small_level0_file):
             shutil.copy(small_level0_file, temp_test_file_path)
             # Process the File
             output_files = calib.process_file(temp_test_file_path)
-
+            shutil.copy(output_files[0], '/workspaces/hermes_eea/hermes_eea/data')
             assert os.path.getsize(output_files[0]) > 275000
 
             # Ensure the file is closed before attempting to delete it

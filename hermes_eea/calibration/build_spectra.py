@@ -35,17 +35,11 @@ class Hermes_EEA_Data_Processor:
         # iso_str_times = Time(epoch_to_iso(self.EEA.Epoch[:]), scale='utc')
         # cdflib -> astropy
         iso_datetimes = Time([lib.tt2000_to_datetime(e) for e in self.EEA.Epoch[:]])
+        quantity_time = self.EEA.Epoch[:] * astropy_units.second
 
         #
         ts_1d_uQ = TimeSeries(
-            time=iso_datetimes,
-            data={
-                "hermes_eea_stats": astropy_units.Quantity(
-                    self.EEA.stats,
-                    astropy_units.dimensionless_unscaled,
-                    dtype=np.uint16,
-                )
-            },
+            time=iso_datetimes
         )
 
         self._hermes_eea_spectra()
@@ -53,11 +47,12 @@ class Hermes_EEA_Data_Processor:
         ts_justTime = TimeSeries(time=iso_datetimes)
 
         self.hermes_eea_data = HermesData(
-            timeseries=ts_1d_uQ, spectra=self.multiple_spectra, meta=bare_attrs
+            timeseries=ts_1d_uQ,  # this is stats time series ....with no stats...
+            spectra=self.multiple_spectra, meta=bare_attrs
         )
-        self.hermes_eea_data.timeseries["hermes_eea_stats"].meta.update(
-            {"CATDESC": "Sum of skymap particle count for each sweep"}
-        )
+        #self.hermes_eea_data.timeseries["hermes_eea_stats"].meta.update(
+        #    {"CATDESC": "Sum of skymap particle count for each sweep"}
+        #)
 
     def _hermes_eea_spectra(self):
         """

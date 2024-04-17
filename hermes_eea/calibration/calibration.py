@@ -227,7 +227,7 @@ def l0_sci_data_to_cdf(
 
         # In the beginning, testing phase of this project, while we adjust things.
         # This will show us which packets have a workable amount of data
-        most_active = np.where(np.array(myEEA.stats) > 150)
+        # most_active = np.where(np.array(myEEA.stats) > 150)
         # these eample start times are also something I would like to keep around for a while
         # example_start_times = Time(
         #    [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
@@ -278,9 +278,10 @@ def read_calibration_file(calib_filename: Path):
 
     Parameters
     ----------
+    DJG says that energies and angles may change
     calib_filename: str
         Fully specificied filename of the non-calibrated file (data level < 2)
-
+        0 1
     Returns
     -------
     output_filename: str
