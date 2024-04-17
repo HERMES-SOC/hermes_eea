@@ -12,7 +12,8 @@ from hermes_eea import _data_directory, stepper_table
 from hermes_core.util.util import create_science_filename, parse_science_filename
 import sys
 from spacepy import pycdf
-
+from hermes_core import log
+import numpy as np
 
 @pytest.fixture(scope="session")  # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
@@ -53,12 +54,9 @@ def test_process_file(small_level0_file):
             shutil.copy(small_level0_file, temp_test_file_path)
             # Process the File
             output_files = calib.process_file(temp_test_file_path)
-            shutil.copy(output_files[0], '/workspaces/hermes_eea/hermes_eea/data')
-            assert os.path.getsize(output_files[0]) > 275000
+            verify_l1a(output_files[0])
 
-            # Ensure the file is closed before attempting to delete it
-            with pycdf.CDF(output_files[0]) as cdf:
-                assert len(cdf["Epoch"][:]) == 18
+            
 
     # Ensure the temporary directory is cleaned up even if an exception is raised (needed for Windows)
     except PermissionError:
@@ -67,6 +65,48 @@ def test_process_file(small_level0_file):
         cleanup_retry(tmpdirname)
 
 
+def verify_l1a(output_l1a):
+    """
+    We haven't decided yet on variables really
+    """
+    assert os.path.getsize(output_l1a) > 275000
+    with pycdf.CDF(output_l1a) as cdf:
+        length_vars = len(cdf["Epoch"][:])
+        length_time = (cdf["Epoch"][-1] - cdf["Epoch"][0]).total_seconds()
+        nSteps = len(calib.energies)
+        assert len(cdf["Epoch"][:]) == 18
+        log.info("Length of CDF Variables: %d" % length_vars)
+        log.info("Time   of CDF Variables: %d" % length_time)
+        assert abs(length_time - length_vars) < 2  # each sweep is about 1 sec
+        variable_list =  [item[0] for item in list(cdf.items())]
+        for var in variable_list:
+            log.info(var)
+            ndims = len(cdf[var].shape)
+
+            # best guess at counter variable
+            if "count" in var:
+                counter = var
+            if "accum" in var:
+                skymap = var
+
+            assert cdf[var].shape[0] == length_vars
+            if len(cdf[var].shape) >= 2 and "INT" in str(cdf[var]):
+                assert cdf[var].shape[1] == nSteps
+        for i in range(0, nSteps):
+            total = np.sum(cdf[skymap][i])
+            cntsum = np.sum(cdf[counter][i])
+
+            # 40% seems like a lot...
+            # that's why I created my STATS variable.
+            # 1 is nominal but 40% is possible for small counts
+            diff = int(.4 * total) 
+
+            log.info("totals: skymap:%d counter:%d" % (total, cntsum))
+            assert abs(cntsum - total) <= diff
+                    
+    shutil.copy(output_l1a, '/workspaces/hermes_eea/hermes_eea/data')
+
+    
 def cleanup_retry(directory):
     """Attempt to clean up the directory after a short delay."""
     try:

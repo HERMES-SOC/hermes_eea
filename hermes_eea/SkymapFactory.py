@@ -52,7 +52,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     #             b = p.starmap(do_EEA__packet, package)
     package = []
     # ccsds coarse+fine -> cdf-epoch times.
-    epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
+    epochs = ccsds_to_cdf_time.help_convert_eaa(l0_cdf)
     try:
         for ptr in range(0, len(beginning_packets) + 1):
             package.append(
