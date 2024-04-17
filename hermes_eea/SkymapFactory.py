@@ -6,14 +6,14 @@ from hermes_eea import energies as voltages
 
 N_ENERGIES = 41
 N_DEFLECTIONS = 4
-N_AZIMUTH = 32
+N_AZIMUTH = 34
 
 
 def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     """This may eventually be handled in a python multiprocessor module instance:
     ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
      'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
-     'hermes_eea_sector_index', 'hermes_eea_sector_label'])
+     'hermes_ eea_sector_index', 'hermes_eea_sector_label'])
 
     Parameters
     -----------
@@ -25,6 +25,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     science_data:
     In the test data, several 'integrates' occurred signified by
      a SHEID of 0. The start of a science data energy sweep is when
+     SHEID (secondary header ID) is 1
     """
 
     # SHEID is 1
@@ -39,6 +40,8 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     # the packets start when STEP is 0
     # the packets are sciencedata when SHEID is 1
     # nominally stepper_table_packets[0] will be 0 (no integrates at the beginning)
+
+    # the starting packet of each sweep: (For our initial, testing stepper table, the STEPS climb from 0 to 163 repeatedly)
     beginning_packets = (
         np.where((l0_cdf["STEP"][stepper_table_packets[0] :]) == 0)[0]
         + stepper_table_packets[0]
@@ -48,24 +51,24 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     #   with Pool(n_pool) as p:
     #             b = p.starmap(do_EEA__packet, package)
     package = []
+    # ccsds coarse+fine -> cdf-epoch times.
     epochs = ccsds_to_cdf_time.helpConvertEEA(l0_cdf)
     try:
-        for ptr in range(0, len(beginning_packets)):
+        for ptr in range(0, len(beginning_packets) + 1):
             package.append(
                 (
-                    l0_cdf["STEP"][beginning_packets[ptr] : beginning_packets[ptr + 1]],
                     l0_cdf["ACCUM"][
                         beginning_packets[ptr] : beginning_packets[ptr + 1]
-                    ],
+                    ],                                                                   # the skymap
                     l0_cdf["COUNTER1"][
-                        beginning_packets[ptr] : beginning_packets[ptr + 1]
-                    ],
+                        beginning_packets[ptr] : beginning_packets[ptr + 1]              # e.g. l0_cdf["COUNTER1"][47] = 12
+                    ],                                                                   # np.sum(l0_cdf["ACCUM"][47]) = 11
                     l0_cdf["COUNTER2"][
-                        beginning_packets[ptr] : beginning_packets[ptr + 1]
+                        beginning_packets[ptr] : beginning_packets[ptr + 1]              # l0_cdf["COUNTER2"][47] = 12
                     ],
                     epochs[beginning_packets[ptr] : beginning_packets[ptr + 1]],
-                    energies,
-                    deflections,
+                    energies,                                                            # from the stepper table
+                    deflections,                                                         # from the stepper table
                     ptr,
                 )
             )
@@ -81,7 +84,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
 
 
 def do_eea_packet(
-    stepperTableCounter, counts, cnt1, cnt2, epoch, energies, deflections, ith_FSmap
+    counts, cnt1, cnt2, epoch, energies, deflections, ith_FSmap
 ):
     """
     This function populates each sweep, or pass through
@@ -100,40 +103,18 @@ def do_eea_packet(
 
     Returns
     -------
-
     """
+
     return_package = {}
-    rows = len(stepperTableCounter)
-    # skymap is already full of zeros, why do it again?
-    # skymap = np.zeros((beginning_packets[ptr+1]-beginning_packets[ptr],N_AZIMUTH))
-    skymaps = []
-    pulse_a = np.zeros((N_ENERGIES, N_DEFLECTIONS), dtype=np.uint16)
-    pulse_b = np.zeros((N_ENERGIES, N_DEFLECTIONS), dtype=np.uint16)
-    counter1 = np.zeros((N_ENERGIES, N_DEFLECTIONS), dtype=np.uint16)
-    counter2 = np.zeros((N_ENERGIES, N_DEFLECTIONS), dtype=np.uint16)
-    usec = np.zeros((N_ENERGIES, N_DEFLECTIONS), dtype=np.uint16)
 
-    skymap = np.zeros((N_ENERGIES, N_DEFLECTIONS, N_AZIMUTH), dtype=np.uint16)
-
-    for row in stepperTableCounter:
-        dim0 = energies[row]
-        dim1 = deflections[row]
-        skymap[dim0, dim1, :] = counts[row, 0:N_AZIMUTH]
-        pulse_a[dim0, dim1] = counts[row][N_AZIMUTH]
-        pulse_b[dim0, dim1] = counts[row][N_AZIMUTH + 1]
-        counter1[dim0, dim1] = cnt1[row]
-        counter2[dim0, dim1] = cnt2[row]
-        usec[dim0, dim1] = epoch[row]
-
-    return_package["pulse_a"] = pulse_a
-    return_package["pulse_b"] = list(pulse_b)
-    return_package["counts"] = skymap
-    return_package["usec"] = usec
-    return_package["Epoch"] = epoch[0]
-    return_package["stats"] = np.sum(skymap)
-    return_package["energies"] = voltages
-    return_package["sun_angles"] = deflections
-    return_package["counter1"] = counter1
-    return_package["counter2"] = counter2
+    #  Since we might have several different stepper tables, we aren't putting them into separate
+    #  energy/deflection dimenstionxs
+    return_package["counts"]     = counts
+    return_package["usec"]       = epoch        # we call this µsec, because it is the time of each step in the sweep within each packet.
+    return_package["Epoch"]      = epoch[0]     # here the "Epoch" is the traditional one: the start time of each packet
+    return_package["energies"]   = voltages     # a static thing for each stepper table
+    return_package["sun_angles"] = deflections  # a static thing for each stepper table I think this is supposed to be angles, not 0,1,2,3 get from Skeberdis
+    return_package["counter1"]   = cnt1         # number of counts in each packet
+    return_package["counter2"]   = cnt2         # number of counts in each packet.
 
     return return_package
