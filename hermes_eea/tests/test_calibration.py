@@ -92,7 +92,7 @@ def verify_l1a(output_l1a):
             assert cdf[var].shape[0] == length_vars
             if len(cdf[var].shape) >= 2 and "INT" in str(cdf[var]):
                 assert cdf[var].shape[1] == nSteps
-        for i in range(0, nSteps):
+        for i in range(0, length_vars):
             total = np.sum(cdf[skymap][i])
             cntsum = np.sum(cdf[counter][i])
 
