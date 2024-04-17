@@ -38,9 +38,7 @@ class Hermes_EEA_Data_Processor:
         quantity_time = self.EEA.Epoch[:] * astropy_units.second
 
         #
-        ts_1d_uQ = TimeSeries(
-            time=iso_datetimes
-        )
+        ts_1d_uQ = TimeSeries(time=iso_datetimes)
 
         self._hermes_eea_spectra()
         bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
@@ -48,11 +46,12 @@ class Hermes_EEA_Data_Processor:
 
         self.hermes_eea_data = HermesData(
             timeseries=ts_1d_uQ,  # this is stats time series ....with no stats...
-            spectra=self.multiple_spectra, meta=bare_attrs
+            spectra=self.multiple_spectra,
+            meta=bare_attrs,
         )
-        #self.hermes_eea_data.timeseries["hermes_eea_stats"].meta.update(
+        # self.hermes_eea_data.timeseries["hermes_eea_stats"].meta.update(
         #    {"CATDESC": "Sum of skymap particle count for each sweep"}
-        #)
+        # )
 
     def _hermes_eea_spectra(self):
         """

@@ -59,16 +59,20 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
                 (
                     l0_cdf["ACCUM"][
                         beginning_packets[ptr] : beginning_packets[ptr + 1]
-                    ],                                                                   # the skymap
+                    ],  # the skymap
                     l0_cdf["COUNTER1"][
-                        beginning_packets[ptr] : beginning_packets[ptr + 1]              # e.g. l0_cdf["COUNTER1"][47] = 12
-                    ],                                                                   # np.sum(l0_cdf["ACCUM"][47]) = 11
+                        beginning_packets[ptr] : beginning_packets[
+                            ptr + 1
+                        ]  # e.g. l0_cdf["COUNTER1"][47] = 12
+                    ],  # np.sum(l0_cdf["ACCUM"][47]) = 11
                     l0_cdf["COUNTER2"][
-                        beginning_packets[ptr] : beginning_packets[ptr + 1]              # l0_cdf["COUNTER2"][47] = 12
+                        beginning_packets[ptr] : beginning_packets[
+                            ptr + 1
+                        ]  # l0_cdf["COUNTER2"][47] = 12
                     ],
                     epochs[beginning_packets[ptr] : beginning_packets[ptr + 1]],
-                    energies,                                                            # from the stepper table
-                    deflections,                                                         # from the stepper table
+                    energies,  # from the stepper table
+                    deflections,  # from the stepper table
                     ptr,
                 )
             )
@@ -83,9 +87,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     myEEA.populate(result)
 
 
-def do_eea_packet(
-    counts, cnt1, cnt2, epoch, energies, deflections, ith_FSmap
-):
+def do_eea_packet(counts, cnt1, cnt2, epoch, energies, deflections, ith_FSmap):
     """
     This function populates each sweep, or pass through
     all of the energies and deflections designated by the stepper table
