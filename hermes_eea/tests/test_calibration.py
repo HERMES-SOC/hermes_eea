@@ -70,18 +70,24 @@ def verify_l1a(output_l1a):
     """
     assert os.path.getsize(output_l1a) > 275000
     with pycdf.CDF(output_l1a) as cdf:
+
+        # overall structure
         length_vars = len(cdf["Epoch"][:])
         length_time = (cdf["Epoch"][-1] - cdf["Epoch"][0]).total_seconds()
         nSteps = len(calib.energies)
         assert len(cdf["Epoch"][:]) == 18
         log.info("Length of CDF Variables: %d" % length_vars)
         log.info("Time   of CDF Variables: %d" % length_time)
+
         assert abs(length_time - length_vars) < 2  # each sweep is about 1 sec
+
+        # review variables
         variable_list = [item[0] for item in list(cdf.items())]
         for var in variable_list:
             log.info(var)
             ndims = len(cdf[var].shape)
 
+        # look at the counts 
             # best guess at counter variable
             if "count" in var:
                 counter = var
@@ -95,7 +101,7 @@ def verify_l1a(output_l1a):
             total = np.sum(cdf[skymap][i])
             cntsum = np.sum(cdf[counter][i])
 
-            # 40% seems like a lot...
+            # 40% seems like a lot... This is because this is not just for one packet but a whole sweep 
             # that's why I created my STATS variable.
             # 1 is nominal but 40% is possible for small counts
             diff = int(0.4 * total)

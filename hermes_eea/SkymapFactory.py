@@ -3,7 +3,7 @@ from hermes_core import log
 from hermes_eea.io import EEA
 from hermes_eea.util.time import ccsds_to_cdf_time
 from hermes_eea import energies as voltages
-
+from hermes_eea import deflections as elevation_angles
 N_ENERGIES = 41
 N_DEFLECTIONS = 4
 N_AZIMUTH = 34
@@ -47,12 +47,13 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
         + stepper_table_packets[0]
     )
 
+    epochs = ccsds_to_cdf_time.help_convert_eaa(l0_cdf)
+    step_values = manage_stepper_table_energies_and_angles(beginning_packets, energies, deflections, 0, len(epochs))
     # This is done this way so  that we can send this package to multiprocessor like:
     #   with Pool(n_pool) as p:
     #             b = p.starmap(do_EEA__packet, package)
     package = []
     # ccsds coarse+fine -> cdf-epoch times.
-    epochs = ccsds_to_cdf_time.help_convert_eaa(l0_cdf)
     try:
         for ptr in range(0, len(beginning_packets) + 1):
             package.append(
@@ -71,8 +72,8 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
                         ]  # l0_cdf["COUNTER2"][47] = 12
                     ],
                     epochs[beginning_packets[ptr] : beginning_packets[ptr + 1]],
-                    energies,  # from the stepper table
-                    deflections,  # from the stepper table
+                    step_values['energy'],  # from the stepper table
+                    step_values['elevation_angle'],  # from the stepper table
                     ptr,
                 )
             )
@@ -87,7 +88,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     myEEA.populate(result)
 
 
-def do_eea_packet(counts, cnt1, cnt2, epoch, energies, deflections, ith_FSmap):
+def do_eea_packet(counts, cnt1, cnt2, epoch, energy_vals, deflection_vals, ith_FSmap):
     """
     This function populates each sweep, or pass through
     all of the energies and deflections designated by the stepper table
@@ -114,9 +115,31 @@ def do_eea_packet(counts, cnt1, cnt2, epoch, energies, deflections, ith_FSmap):
     return_package["counts"]     = counts
     return_package["usec"]       = epoch        # we call this µsec, because it is the time of each step in the sweep within each packet.
     return_package["Epoch"]      = epoch[0]     # here the "Epoch" is the traditional one: the start time of each packet
-    return_package["energies"]   = voltages     # a static thing for each stepper table
-    return_package["sun_angles"] = deflections  # a static thing for each stepper table I think this is supposed to be angles, not 0,1,2,3 get from Skeberdis
+    return_package["energies"]   = energy_vals  # a static thing for each stepper table
+    return_package["sun_angles"] = deflection_vals  # a static thing for each stepper table I think this is supposed to be angles, not 0,1,2,3 get from Skeberdis
     return_package["counter1"]   = cnt1         # number of counts in each packet
     return_package["counter2"]   = cnt2         # number of counts in each packet.
 
     return return_package
+
+
+def manage_stepper_table_energies_and_angles(beginning_packets, energies, deflections, packet, npackets):
+    """
+    I'm doing it this way mostly to be able to handle the last,
+    incomplete sweep"""
+
+    stepvalues = {}
+    stepvalues['energy'] = []
+    stepvalues['elevation_angle'] = []
+    finish = npackets
+    try:
+        if beginning_packets[packet + 1]:
+            finish = beginning_packets[packet+1]
+    except TypeError:
+        pass  # we are in last incomplete packet
+     
+    for i in range(beginning_packets[packet], finish):
+        
+        stepvalues['energy'].append(voltages[energies[i]])
+        stepvalues['elevation_angle'].append(elevation_angles[deflections[i]])
+    return stepvalues

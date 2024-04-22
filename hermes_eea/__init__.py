@@ -29,6 +29,12 @@ log.info(f"hermes_eea version: {__version__}")
 
 stepper_table = "flight_stepper.txt"
 
+deflections = [
+    -16.875,
+    -5.625,
+    5.625,
+    16.875
+]
 
 energies = [
     2.18000000e00,

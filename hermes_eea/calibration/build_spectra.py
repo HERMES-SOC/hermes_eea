@@ -81,6 +81,15 @@ class Hermes_EEA_Data_Processor:
                     ),
                 ),
                 (
+                    "hermes_eea_deflection_angles",
+                    NDCube(
+                        data=np.array(self.EEA.SunAngles),
+                        wcs=WCS(naxis=2),
+                        meta={"CATDESC": "Deflection Angles"},
+                        unit=astropy_units.deg,
+                    ),
+                ),
+                (
                     "hermes_eea_accum",
                     NDCube(
                         data=np.array(self.EEA.ACCUM),
