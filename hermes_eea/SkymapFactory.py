@@ -2,10 +2,10 @@ import numpy as np
 from hermes_core import log
 from hermes_eea.io import EEA
 from hermes_eea.util.time import ccsds_to_cdf_time
-N_AZIMUTH = 34
+from hermes_eea.io.EEA import MAX_STEPS, N_AZIMUTH, REAL4FILL, EPOCHTIMEFILL, INTFILL
 
 
-def SkymapFactory(l0_cdf, stepper, myEEA):
+def skymap_factory(l0_cdf, stepper, myEEA):
     """This may eventually be handled in a python multiprocessor module instance:
     ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
      'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
@@ -103,18 +103,23 @@ def do_eea_packet(counts, cnt1, cnt2, epoch, energy_vals, deflection_vals, ith_F
     Returns
     -------
     """
-
     return_package = {}
+    return_package["Epoch"]  = epoch[0]     # here the "Epoch" is the traditional one: the start time of each packet
+   
+    return_package["usec"]   = stuff_stepsize(epoch, (MAX_STEPS), EPOCHTIMEFILL) 
+    
+    return_package["counts"] = np.full((MAX_STEPS, N_AZIMUTH), REAL4FILL)
+    return_package["counts"][0:counts.shape[0], 0:counts.shape[1]] = counts
 
     #  Since we might have several different stepper tables, we aren't putting them into separate
     #  energy/deflection dimenstionxs
-    return_package["counts"]     = counts
-    return_package["usec"]       = epoch        # we call this µsec, because it is the time of each step in the sweep within each packet.
-    return_package["Epoch"]      = epoch[0]     # here the "Epoch" is the traditional one: the start time of each packet
-    return_package["energies"]   = energy_vals  # a static thing for each stepper table
-    return_package["sun_angles"] = deflection_vals  # a static thing for each stepper table I think this is supposed to be angles, not 0,1,2,3 get from Skeberdis
-    return_package["counter1"]   = cnt1         # number of counts in each packet
-    return_package["counter2"]   = cnt2         # number of counts in each packet.
+    return_package["energies"]    = stuff_stepsize(energy_vals, (MAX_STEPS), REAL4FILL)  # a static thing for each stepper table
+
+    return_package["deflections"] = stuff_stepsize(deflection_vals, (MAX_STEPS), REAL4FILL)  # a static thing for each stepper table
+
+    return_package["counter1"]    = stuff_stepsize(cnt1, (MAX_STEPS), INTFILL)         # number of counts in each packet (not each sweep)
+
+    return_package["counter2"]    = stuff_stepsize(cnt2, (MAX_STEPS), INTFILL)         # number of counts in each packet
 
     return return_package
 
@@ -138,4 +143,17 @@ def manage_stepper_table_energies_and_angles(beginning_packets, stepper, packet,
         
         stepvalues['energy'].append(stepper.v_energies[stepper.energies[i]])
         stepvalues['elevation_angle'].append(stepper.v_defl[stepper.deflections[i]])
+    stepvalues['energy'] = np.array( stepvalues['energy'] ) 
+    stepvalues['elevation_angle'] = np.array( stepvalues['elevation_angle'] ) 
     return stepvalues
+
+
+def stuff_stepsize(vals, maxsteps: tuple, fill):
+    """
+    SPDF won't allow variable size variables
+    """
+    default_size                   = np.full(maxsteps, fill)  
+    default_size[0:vals.shape[0]]  = vals  
+    return default_size
+
+    

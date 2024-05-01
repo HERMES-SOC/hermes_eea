@@ -3,6 +3,7 @@ from pathlib import Path
 import hermes_eea
 from hermes_eea.io import read_file
 import os
+import numpy as np
 
 
 class Stepper_Table():
@@ -64,6 +65,7 @@ class Stepper_Table():
           1.63800000e04,
         ]
    
+
     def parse_stepper_table(self):
         """
         Given a calibration, return the calibration structure.

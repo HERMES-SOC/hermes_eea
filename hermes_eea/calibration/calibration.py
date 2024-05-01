@@ -16,7 +16,7 @@ import hermes_eea
 from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
-from hermes_eea.SkymapFactory import SkymapFactory
+from hermes_eea.SkymapFactory import skymap_factory
 from hermes_eea.Stepper.Stepper_Table import Stepper_Table
 
 # cdflib -> spacepy
@@ -228,7 +228,7 @@ def l0_sci_data_to_cdf(stepper, data: dict, original_filename: Path, destination
 
         myEEA = EEA(file_metadata)
         # SkymapFactory, now as does FPI, also populates my EEA data model
-        SkymapFactory(data, stepper, myEEA)
+        skymap_factory(data, stepper, myEEA)
 
         # In the beginning, testing phase of this project, while we adjust things.
         # This will show us which packets have a workable amount of data

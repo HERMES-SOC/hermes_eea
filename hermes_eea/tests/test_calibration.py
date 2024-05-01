@@ -69,13 +69,14 @@ def verify_l1a(stepper, output_l1a):
     """
     We haven't decided yet on variables really
     """
+    from hermes_eea.io.EEA import REAL4FILL, EPOCHTIMEFILL, INTFILL
     assert os.path.getsize(output_l1a) > 275000
     with pycdf.CDF(output_l1a) as cdf:
 
         # overall structure
         length_vars = len(cdf["Epoch"][:])
         length_time = (cdf["Epoch"][-1] - cdf["Epoch"][0]).total_seconds()
-        nSteps = len(stepper.energies)
+        
         assert len(cdf["Epoch"][:]) == 18
         log.info("Length of CDF Variables: %d" % length_vars)
         log.info("Time   of CDF Variables: %d" % length_time)
@@ -97,10 +98,10 @@ def verify_l1a(stepper, output_l1a):
 
             assert cdf[var].shape[0] == length_vars
             if len(cdf[var].shape) >= 2 and "INT" in str(cdf[var]):
-                assert cdf[var].shape[1] == nSteps
+                assert cdf[var][0][stepper.n_defl * stepper.n_energies] in [REAL4FILL, EPOCHTIMEFILL, INTFILL]
         for i in range(0, length_vars):
-            total = np.sum(cdf[skymap][i])
-            cntsum = np.sum(cdf[counter][i])
+            total =  np.sum(cdf[skymap][i][0:stepper.n_defl * stepper.n_energies,:]) 
+            cntsum = np.sum(cdf[counter][i][0:stepper.n_defl * stepper.n_energies])
 
             # 40% seems like a lot... This is because this is not just for one packet but a whole sweep 
             # that's why I created my STATS variable.
