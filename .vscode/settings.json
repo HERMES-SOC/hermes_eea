@@ -1,0 +1,12 @@
+{
+    "python.testing.pytestArgs": [],
+    "python.testing.unittestEnabled": false,
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestArgs": [
+        "-v",
+        "-s",
+        "./hermes_eea",
+        "-p",
+        "*test*.py"
+    ]
+}

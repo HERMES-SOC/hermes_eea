@@ -17,6 +17,7 @@ from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
+from hermes_eea.Stepper.Stepper_Table import Stepper_Table
 
 # cdflib -> spacepy
 from spacepy.pycdf import lib
@@ -33,7 +34,7 @@ __all__ = [
 ]
 
 
-def process_file(data_filename: Path) -> list:
+def process_file(data_filename: Path, stepper: Stepper_Table) -> list:
     """
     This is the entry point for the pipeline processing.
     It runs all of the various processing steps required
@@ -71,7 +72,7 @@ def process_file(data_filename: Path) -> list:
     destination_dir = data_filename.parent
 
     # Calibrate the Input File
-    calibrated_file = calibrate_file(data_filename, destination_dir)
+    calibrated_file = calibrate_file(data_filename, destination_dir, stepper)
     output_files.append(calibrated_file)
 
     # Add Plots to the Output Files if we want
@@ -82,7 +83,7 @@ def process_file(data_filename: Path) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path, destination_dir) -> Path:
+def calibrate_file(data_filename: Path, destination_dir, stepper: Stepper_Table) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
@@ -99,7 +100,8 @@ def calibrate_file(data_filename: Path, destination_dir) -> Path:
 
     """
     log.info(f"Calibrating file:{data_filename}.")
-
+    #stepper = Stepper_Table(hermes_eea.stepper_table)
+  
     file_metadata = parse_science_filename(data_filename.name)
 
     # check if level 0 binary file, if so call appropriate functions
@@ -109,7 +111,7 @@ def calibrate_file(data_filename: Path, destination_dir) -> Path:
     ):
         # call CCSDSPY to parse our packets.
         data = parse_l0_sci_packets(data_filename)
-        level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
+        level1_filename = l0_sci_data_to_cdf(stepper, data, data_filename, destination_dir)
         output_filename = level1_filename
     elif (
         file_metadata["instrument"] == hermes_eea.INST_NAME
@@ -179,8 +181,7 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     return data
 
 
-def l0_sci_data_to_cdf(
-    data: dict, original_filename: Path, destination_dir: Path
+def l0_sci_data_to_cdf(stepper, data: dict, original_filename: Path, destination_dir: Path
 ) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
@@ -218,12 +219,16 @@ def l0_sci_data_to_cdf(
         f'1.0.{file_metadata["version"]}',
     )
     if data:
-        calibration_file = get_calibration_file(hermes_eea.stepper_table)
-        read_calibration_file(calibration_file)
+        """
+        hermes_eea.stepper_table for now is defined in hermes_eea/hermes_eea/__init__.py
+        """
+      
+        # calibration_file = get_calibration_file(hermes_eea.stepper_table)
+        # read_calibration_file(calibration_file)
 
         myEEA = EEA(file_metadata)
         # SkymapFactory, now as does FPI, also populates my EEA data model
-        SkymapFactory(data, calib.energies, calib.deflections, myEEA)
+        SkymapFactory(data, stepper, myEEA)
 
         # In the beginning, testing phase of this project, while we adjust things.
         # This will show us which packets have a workable amount of data

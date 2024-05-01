@@ -2,14 +2,10 @@ import numpy as np
 from hermes_core import log
 from hermes_eea.io import EEA
 from hermes_eea.util.time import ccsds_to_cdf_time
-from hermes_eea import energies as voltages
-from hermes_eea import deflections as elevation_angles
-N_ENERGIES = 41
-N_DEFLECTIONS = 4
 N_AZIMUTH = 34
 
 
-def SkymapFactory(l0_cdf, energies, deflections, myEEA):
+def SkymapFactory(l0_cdf, stepper, myEEA):
     """This may eventually be handled in a python multiprocessor module instance:
     ['Epoch', 'Epoch_plus_var', 'Epoch_minus_var', 'hermes_eea_step_counter',
      'hermes_eea_counter1', 'hermes_eea_counter2', 'hermes_eea_accumulations',
@@ -48,7 +44,7 @@ def SkymapFactory(l0_cdf, energies, deflections, myEEA):
     )
 
     epochs = ccsds_to_cdf_time.help_convert_eaa(l0_cdf)
-    step_values = manage_stepper_table_energies_and_angles(beginning_packets, energies, deflections, 0, len(epochs))
+    step_values = manage_stepper_table_energies_and_angles(beginning_packets, stepper, 0, len(epochs))
     # This is done this way so  that we can send this package to multiprocessor like:
     #   with Pool(n_pool) as p:
     #             b = p.starmap(do_EEA__packet, package)
@@ -123,7 +119,7 @@ def do_eea_packet(counts, cnt1, cnt2, epoch, energy_vals, deflection_vals, ith_F
     return return_package
 
 
-def manage_stepper_table_energies_and_angles(beginning_packets, energies, deflections, packet, npackets):
+def manage_stepper_table_energies_and_angles(beginning_packets, stepper, packet, npackets):
     """
     I'm doing it this way mostly to be able to handle the last,
     incomplete sweep"""
@@ -140,6 +136,6 @@ def manage_stepper_table_energies_and_angles(beginning_packets, energies, deflec
      
     for i in range(beginning_packets[packet], finish):
         
-        stepvalues['energy'].append(voltages[energies[i]])
-        stepvalues['elevation_angle'].append(elevation_angles[deflections[i]])
+        stepvalues['energy'].append(stepper.v_energies[stepper.energies[i]])
+        stepvalues['elevation_angle'].append(stepper.v_defl[stepper.deflections[i]])
     return stepvalues

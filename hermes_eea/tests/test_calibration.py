@@ -14,7 +14,7 @@ import sys
 from spacepy import pycdf
 from hermes_core import log
 import numpy as np
-
+from hermes_eea.Stepper.Stepper_Table import Stepper_Table
 
 @pytest.fixture(scope="session")  # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
@@ -48,14 +48,15 @@ def test_process_file(small_level0_file):
         A Custom EEA SkymapFactory
         HermesData
     """
+    stepper = Stepper_Table(hermes_eea.stepper_table)
     try:
         with tempfile.TemporaryDirectory() as tmpdirname:
             # Create a Temp Copy of the Original
             temp_test_file_path = Path(tmpdirname, small_level0_file.name)
             shutil.copy(small_level0_file, temp_test_file_path)
             # Process the File
-            output_files = calib.process_file(temp_test_file_path)
-            verify_l1a(output_files[0])
+            output_files = calib.process_file(temp_test_file_path, stepper)
+            verify_l1a(stepper, output_files[0])
 
     # Ensure the temporary directory is cleaned up even if an exception is raised (needed for Windows)
     except PermissionError:
@@ -64,7 +65,7 @@ def test_process_file(small_level0_file):
         cleanup_retry(tmpdirname)
 
 
-def verify_l1a(output_l1a):
+def verify_l1a(stepper, output_l1a):
     """
     We haven't decided yet on variables really
     """
@@ -74,7 +75,7 @@ def verify_l1a(output_l1a):
         # overall structure
         length_vars = len(cdf["Epoch"][:])
         length_time = (cdf["Epoch"][-1] - cdf["Epoch"][0]).total_seconds()
-        nSteps = len(calib.energies)
+        nSteps = len(stepper.energies)
         assert len(cdf["Epoch"][:]) == 18
         log.info("Length of CDF Variables: %d" % length_vars)
         log.info("Time   of CDF Variables: %d" % length_time)
