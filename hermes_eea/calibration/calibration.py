@@ -2,9 +2,6 @@
 A module for all things calibration.
 """
 
-from datetime import datetime, timezone, timedelta
-import random
-import os.path
 from pathlib import Path
 import sys
 import ccsdspy
@@ -36,33 +33,37 @@ __all__ = [
 def process_file(data_filename: Path) -> list:
     """
     This is the entry point for the pipeline processing.
-    It runs all of the various processing steps required
-    to create a L1A Hermes CDF File
+    It runs all of the various processing steps required to create a L1A Hermes CDF File.
     calls:
-        calibrate_file()
-           parse_science
-           CCSDSPY (parse_L0_sci_packets())
-           l0_sci_data_to_cdf()
-                SkymapFactory()
-                Use HermesData to populate CDF output file
-                Write the File
-        A Custom EEA SkymapFactory
-        HermesData
+    
+    .. code-block:: python
+    
+        calibrate_file(...)
+            parse_science_filename(...)
+            parse_l0_sci_packets(...)
+            l0_sci_data_to_cdf(...)
+                SkymapFactory(...)
+                # Use HermesData to populate CDF output file
+                Hermes_EEA_Data_Processor(...).build_HermesData()
+                # Write the File
+                hermes_eea_data.save(...)
+        # A Custom EEA SkymapFactory
+        # HermesData
+    
 
     Parameters
     ----------
-    data_filename: str
+    data_filename: `pathlib.Path`
         Fully specificied filename of an input file.
-        The file contents:
-            Traditional binary packets in CCSDS format
+        The file contents: Traditional binary packets in CCSDS format
 
 
     Returns
     -------
-    output_filenames: list
-        Fully specificied filenames for the output files.
-    The file contents:
-        CDF formatted file with n packets iincluding time and [41,4,32] skymap.
+    output_filenames: `list[pathlib.Path]`
+        Fully specificied filenames for the output CDF files.
+        The file contains CDF formatted file with n packets iincluding time and [41,4,32] skymap.
+    
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
@@ -82,19 +83,21 @@ def process_file(data_filename: Path) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path, destination_dir) -> Path:
+def calibrate_file(data_filename: Path, destination_dir: Path) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
 
     Parameters
     ----------
-    data_filename: Path
+    data_filename: `pathlib.Path`
         Fully specificied filename of the input data file.
+    destination_dir: `pathlib.Path`
+        Fully specificied directory where the output file will be written.
 
     Returns
     -------
-    output_filename: Path
+    output_filename: `pathlib.Path`
         Fully specificied filename of the output file.
 
     """
@@ -156,7 +159,7 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
 
     Parameters
     ----------
-    data_filename: str
+    data_filename: `pathlib.Path`
         Fully specificied filename
 
     Returns
@@ -173,7 +176,7 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     log.info(f"Parsing packets from file:{data_filename}.")
 
     pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
+        Path(hermes_eea._data_directory) / "hermes_EEA_sci_packet_def.csv"
     )
     data = pkt.load(data_filename)
     return data
@@ -189,8 +192,10 @@ def l0_sci_data_to_cdf(
     ----------
     data: dict
         A dictionary of arrays which includes the ccsds header fields
-    original_filename: Path
+    original_filename: `pathlib.Path`
         The Path to the originating file.
+    destination_dir: `pathlib.Path`
+        The directory where the output file will be written.
 
     Returns
     -------
@@ -243,7 +248,7 @@ def l0_sci_data_to_cdf(
         try:
             # this writes out the data to CDF file format
             cdf_path = hermes_eea_factory.hermes_eea_data.save(
-                str(destination_dir), True
+                output_path=destination_dir, overwrite=True
             )
         except Exception as e:
             log.error(e)
@@ -263,13 +268,13 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
 
     Returns
     -------
-    calib_filename: str
+    calib_filename: `pathlib.Path`
         Fully specificied filename for the appropriate calibration file.
 
     Examples
     --------
     """
-    return os.path.join(hermes_eea._calibration_directory, data_filename)
+    return Path(hermes_eea._calibration_directory) / data_filename
 
 
 def read_calibration_file(calib_filename: Path):
@@ -278,18 +283,18 @@ def read_calibration_file(calib_filename: Path):
 
     Parameters
     ----------
-    calib_filename: str
+    calib_filename: `pathlib.Path`
         Fully specificied filename of the non-calibrated file (data level < 2)
 
     Returns
     -------
-    output_filename: str
+    output_filename: `pathlib.Path`
         Fully specificied filename of the appropriate calibration file.
 
     Examples
     --------
     """
-    lines = read_file(os.path.join(calib_filename))
+    lines = read_file(calib_filename)
     calib.energies = []
     calib.deflections = []
     for line in lines:

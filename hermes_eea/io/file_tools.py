@@ -1,6 +1,6 @@
+from pathlib import Path
 from ccsdspy import FixedLength
 import numpy as np
-import os
 
 """
 This module provides a generic file reader.
@@ -9,13 +9,13 @@ This module provides a generic file reader.
 __all__ = ["read_file", "read_ccsds"]
 
 
-def read_file(data_filename):
+def read_file(data_filename: Path):
     """
     Read a file.
 
     Parameters
     ----------
-    data_filename: str
+    data_filename: `pathlib.Path`
         A file to read.
 
     Returns
@@ -29,16 +29,16 @@ def read_file(data_filename):
         with open(data_filename) as fh:
             return fh.readlines()
     except Exception:
-        raise Exception("Could not find: " + os.path.abspath(data_filename))
+        raise Exception("Could not find: " + data_filename)
 
 
-def read_ccsds(filename: str, pkt_def: FixedLength):
+def read_ccsds(filename: Path, pkt_def: FixedLength):
     """
     Read a ccsds packet file.
 
     Parameters
     ----------
-    filename: str
+    filename: `pathlib.Path`
         A file to read.
 
     pkt_def: `ccsdspy.FixedLength`
