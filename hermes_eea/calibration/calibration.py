@@ -35,9 +35,9 @@ def process_file(data_filename: Path) -> list:
     This is the entry point for the pipeline processing.
     It runs all of the various processing steps required to create a L1A Hermes CDF File.
     calls:
-    
+
     .. code-block:: python
-    
+
         calibrate_file(...)
             parse_science_filename(...)
             parse_l0_sci_packets(...)
@@ -49,7 +49,7 @@ def process_file(data_filename: Path) -> list:
                 hermes_eea_data.save(...)
         # A Custom EEA SkymapFactory
         # HermesData
-    
+
 
     Parameters
     ----------
@@ -63,7 +63,7 @@ def process_file(data_filename: Path) -> list:
     output_filenames: `list[pathlib.Path]`
         Fully specificied filenames for the output CDF files.
         The file contains CDF formatted file with n packets iincluding time and [41,4,32] skymap.
-    
+
     """
     log.info(f"Processing file {data_filename}.")
     output_files = []
