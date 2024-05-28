@@ -199,7 +199,7 @@ def l0_sci_data_to_cdf(
 
     Returns
     -------
-    output_filename: Path
+    output_filename: `pathlib.Path`
         Fully specificied filename of cdf file
 
     Examples
@@ -262,7 +262,7 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Given a time, return the appropriate calibration file.
     Parameters
     ----------
-    data_filename: str
+    data_filename: `pathlib.Path`
         Fully specificied filename of the non-calibrated file (data level < 2)
     time: ~astropy.time.Time
 
