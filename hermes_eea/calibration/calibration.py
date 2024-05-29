@@ -60,7 +60,7 @@ def process_file(data_filename: Path) -> list:
 
     Returns
     -------
-    output_filenames: `list[pathlib.Path]`
+    output_files: `list[pathlib.Path]`
         Fully specificied filenames for the output CDF files.
         The file contains CDF formatted file with n packets iincluding time and [41,4,32] skymap.
 
