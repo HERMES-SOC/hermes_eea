@@ -1,6 +1,6 @@
 # Licensed under Apache License v2 - see LICENSE.rst
-import os.path
 import sys
+from pathlib import Path
 
 from hermes_core import log
 from hermes_eea.io.file_tools import read_file
@@ -20,9 +20,9 @@ INST_TARGETNAME = "EEA"
 INST_TO_SHORTNAME = {INST_NAME: INST_SHORTNAME}
 INST_TO_TARGETNAME = {INST_NAME: INST_TARGETNAME}
 
-_package_directory = os.path.dirname(os.path.abspath(__file__))
-_data_directory = os.path.abspath(os.path.join(_package_directory, "data"))
-_calibration_directory = os.path.abspath(os.path.join(_data_directory, "calibration"))
+_package_directory = Path(__file__).parent
+_data_directory = _package_directory / "data"
+_calibration_directory = _data_directory / "calibration"
 
 
 log.info(f"hermes_eea version: {__version__}")
