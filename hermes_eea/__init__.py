@@ -1,5 +1,4 @@
 # Licensed under Apache License v2 - see LICENSE.rst
-import sys
 from pathlib import Path
 
 from hermes_core import log
