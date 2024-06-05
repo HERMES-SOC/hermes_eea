@@ -1,5 +1,4 @@
 import pytest
-import os.path
 from pathlib import Path
 import shutil
 import tempfile
@@ -16,7 +15,7 @@ from spacepy import pycdf
 
 @pytest.fixture(scope="session")  # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
-    fn = Path(os.path.join(_data_directory, "hermes_EEA_l0_2023042-000000_v0.bin"))
+    fn = Path(_data_directory) / "hermes_EEA_l0_2023042-000000_v0.bin"
     return fn
 
 
@@ -32,7 +31,7 @@ def test_read_ccsdspy(small_level0_file):
 
     """
     pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
+        Path(hermes_eea._data_directory) / "hermes_EEA_sci_packet_def.csv"
     )
     result = read_ccsds(small_level0_file, pkt)
     assert len(result["ACCUM"]) == 3051
@@ -54,10 +53,12 @@ def test_process_file(small_level0_file):
             # Process the File
             output_files = calib.process_file(temp_test_file_path)
 
-            assert os.path.getsize(output_files[0]) > 0
+            for f in output_files:
+                assert isinstance(f, Path)
+            assert output_files[0].stat().st_size > 0
 
             # Ensure the file is closed before attempting to delete it
-            with pycdf.CDF(output_files[0]) as cdf:
+            with pycdf.CDF(str(output_files[0])) as cdf:
                 assert len(cdf["Epoch"][:]) == 18
 
     # Ensure the temporary directory is cleaned up even if an exception is raised (needed for Windows)
