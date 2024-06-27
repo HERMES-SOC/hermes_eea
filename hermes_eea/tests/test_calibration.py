@@ -71,7 +71,7 @@ def verify_l1a(stepper, output_l1a):
     """
     from hermes_eea.io.EEA import REAL4FILL, EPOCHTIMEFILL, INTFILL
     assert os.path.getsize(output_l1a) > 275000
-    with pycdf.CDF(output_l1a) as cdf:
+    with pycdf.CDF(str(output_l1a)) as cdf:
 
         # overall structure
         length_vars = len(cdf["Epoch"][:])

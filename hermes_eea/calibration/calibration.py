@@ -248,7 +248,7 @@ def l0_sci_data_to_cdf(stepper, data: dict, original_filename: Path, destination
         try:
             # this writes out the data to CDF file format
             cdf_path = hermes_eea_factory.hermes_eea_data.save(
-                str(destination_dir), True
+                destination_dir, True
             )
         except Exception as e:
             log.error(e)
