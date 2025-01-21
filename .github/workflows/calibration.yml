@@ -1,6 +1,6 @@
 name: Test Lambda Function Locally and Upload Artifacts
 
-on: [pull_request_target]
+on: [pull_request]
 
 jobs:
   test-and-upload:
@@ -22,7 +22,9 @@ jobs:
         sed -i '/hermes_eea/d' hermes-requirements.txt
         sed -i "1i hermes_eea @ $BRANCH_URL" hermes-requirements.txt
         sed -i "s|hermes_eea @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea @ $BRANCH_URL|" requirements.txt
-        docker build --build-arg REQUIREMENTS_FILE=hermes-requirements.txt -t processing_function:latest . --network host
+        docker build -t processing_function:latest . --network host
+
+        
         
     - name: Run Lambda Docker Container
       run: |
