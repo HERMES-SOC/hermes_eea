@@ -19,8 +19,10 @@ jobs:
         cd sdc_aws_processing_lambda/lambda_function
         BRANCH_URL="git+https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git@${{ github.event.pull_request.head.ref }}"
         echo "Branch URL: $BRANCH_URL"
+        sed -i '/hermes_eea/d' hermes-requirements.txt
+        sed -i "1i hermes_eea @ $BRANCH_URL" hermes-requirements.txt
         sed -i "s|hermes_eea @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea @ $BRANCH_URL|" requirements.txt
-        docker build -t processing_function:latest . --network host
+        docker build --build-arg REQUIREMENTS_FILE=hermes-requirements.txt -t processing_function:latest . --network host
         
     - name: Run Lambda Docker Container
       run: |
