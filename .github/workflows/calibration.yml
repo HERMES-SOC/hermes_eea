@@ -11,7 +11,6 @@ jobs:
     steps:
     - name: Checkout Repository
       uses: actions/checkout@v4
-
     - name: Build Lambda Docker Image
       run: |
         # Define the repository and branch dynamically
@@ -29,6 +28,7 @@ jobs:
         PACKAGE_NAME="hermes_eea"
         REPO_NAME=$(basename -s .git $REPO_URL)
         MISSION_NAME=$(echo $REPO_NAME | awk -F'_' '{print $1}')
+        INSTRUMENT_NAME=$(echo $REPO_NAME | awk -F'_' '{print $2}')
     
         echo "Repository Name: $REPO_NAME"
         echo "Mission Name: $MISSION_NAME"
@@ -64,6 +64,7 @@ jobs:
         # Export mission name and image tag for use in later steps
         echo "MISSION_NAME=$MISSION_NAME" >> $GITHUB_ENV
         echo "IMAGE_TAG=processing_function:latest" >> $GITHUB_ENV
+        echo "INSTRUMENT_NAME=$INSTRUMENT_NAME" >> $GITHUB_ENV
     
     - name: Run Lambda Docker Container
       run: |
@@ -72,8 +73,8 @@ jobs:
           -e USE_INSTRUMENT_TEST_DATA=True \
           -e LAMBDA_ENVIRONMENT=DEVELOPMENT \
           -e SWXSOC_MISSION=${{ env.MISSION_NAME }} \
-          ${IMAGE_TAG}
-        container_id=$(docker ps -qf "ancestor=${IMAGE_TAG}")
+          ${{env.IMAGE_TAG}}
+        container_id=$(docker ps -qf "ancestor=${{env.IMAGE_TAG}}")
         echo "Container ID: $container_id"
     
     - name: Wait for Container to Initialize
@@ -82,8 +83,9 @@ jobs:
     - name: Test Lambda Function with curl
       id: test-lambda
       run: |
+        cd ../sdc_aws_processing_lambda/
         # Run curl and write the HTTP status code to a variable
-        HTTP_STATUS=$(curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @.github/workflows/test_data/test_meddea_event.json)
+        HTTP_STATUS=$(curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @lambda_function/tests/test_data/test_${{env.INSTRUMENT_NAME}}_event.json)
         echo "HTTP Status: $HTTP_STATUS"
     
         # Grep the HTTP status code from the curl output for 200 (success)
@@ -91,7 +93,7 @@ jobs:
         echo "Status Code: $STATUS_CODE"
     
         # Docker logs for debugging
-        container_id=$(docker ps -qf "ancestor=${IMAGE_TAG}")
+        container_id=$(docker ps -qf "ancestor=${{env.IMAGE_TAG}}")
         docker logs $container_id
     
         # If the HTTP status code is 200, then the test is successful
@@ -108,7 +110,7 @@ jobs:
     - name: Copy Processed Files from Container
       if: steps.test-lambda.outputs.test_success == 'true'
       run: |
-        container_id=$(docker ps -qf "ancestor=${IMAGE_TAG}")
+        container_id=$(docker ps -qf "ancestor=${{env.IMAGE_TAG}}")
         # Create a directory for processed files
         mkdir processed_files
         # Copy the files from the container to the host
