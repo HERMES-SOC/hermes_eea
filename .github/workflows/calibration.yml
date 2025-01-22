@@ -24,15 +24,14 @@ jobs:
         git clone https://github.com/HERMES-SOC/sdc_aws_processing_lambda.git ../sdc_aws_processing_lambda
         cd ../sdc_aws_processing_lambda/lambda_function
     
-        # Define the package name and mission name
-        PACKAGE_NAME="hermes_eea"
-        REPO_NAME=$(basename -s .git $REPO_URL)
-        MISSION_NAME=$(echo $REPO_NAME | awk -F'_' '{print $1}')
-        INSTRUMENT_NAME=$(echo $REPO_NAME | awk -F'_' '{print $2}')
+        # Define mission name & instrument name from the repository name
+        PACKAGE_NAME=$(basename -s .git $REPO_URL)
+        MISSION_NAME=$(echo $PACKAGE_NAME | awk -F'_' '{print $1}')
+        INSTRUMENT_NAME=$(echo $PACKAGE_NAME | awk -F'_' '{print $2}')
     
-        echo "Repository Name: $REPO_NAME"
-        echo "Mission Name: $MISSION_NAME"
         echo "Package Name: $PACKAGE_NAME"
+        echo "Mission Name: $MISSION_NAME"
+        echo "Instrument Name: $INSTRUMENT_NAME"
     
         # Define the mission-specific requirements file
         REQUIREMENTS_FILE="${MISSION_NAME}-requirements.txt"
