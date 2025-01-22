@@ -10,7 +10,7 @@ jobs:
 
     steps:
     - name: Checkout Repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Build Lambda Docker Image
       run: |
@@ -25,10 +25,8 @@ jobs:
         git clone https://github.com/HERMES-SOC/sdc_aws_processing_lambda.git ../sdc_aws_processing_lambda
         cd ../sdc_aws_processing_lambda/lambda_function
     
-        # Define the package name
+        # Define the package name and mission name
         PACKAGE_NAME="hermes_eea"
-    
-        # Extract the mission name dynamically from the package directory or repo name
         REPO_NAME=$(basename -s .git $REPO_URL)
         MISSION_NAME=$(echo $REPO_NAME | awk -F'_' '{print $1}')
     
@@ -45,15 +43,23 @@ jobs:
           touch $REQUIREMENTS_FILE
         fi
     
-        # Remove any previous entries for the package and add the new branch URL as the first entry
+        # Remove any previous entries for 'hermes_eea' and add the new branch URL as the first entry
         sed -i "/${PACKAGE_NAME}/d" $REQUIREMENTS_FILE
         sed -i "1i ${PACKAGE_NAME}  @ $BRANCH_URL" $REQUIREMENTS_FILE
     
         echo "Updated $REQUIREMENTS_FILE:"
         cat $REQUIREMENTS_FILE
     
-        # Build the Docker image
-        docker build -t processing_function:latest . --network host
+        # Attempt to build using the base image from ECR
+        BASE_IMAGE="public.ecr.aws/w5r9l1c8/dev-${MISSION_NAME}-swsoc-docker-lambda-base:latest"
+    
+        if docker pull $BASE_IMAGE; then
+          echo "Building Docker image with base image $BASE_IMAGE"
+          docker build --build-arg BASE_IMAGE=$BASE_IMAGE --build-arg REQUIREMENTS_FILE=$REQUIREMENTS_FILE -t processing_function:latest . --network host
+        else
+          echo "Base image not found, falling back to building without base image"
+          docker build --build-arg REQUIREMENTS_FILE=$REQUIREMENTS_FILE -t processing_function:latest . --network host
+        fi
     
     
         
@@ -71,7 +77,7 @@ jobs:
       run: |
         cd ../sdc_aws_processing_lambda/
         # Run curl and write the HTTP status code to a variable
-        HTTP_STATUS=$(curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @lambda_function/tests/test_data/test_eea_event.json)
+        HTTP_STATUS=$(curl -XPOST "http://localhost:9000/2015-03-31/functions/function/invocations" -e SWXSOC_MISSION= -d @lambda_function/tests/test_data/test_eea_event.json)
         echo "HTTP Status: $HTTP_STATUS"
 
         # Grep the HTTP status code from the curl output for 200 (success)
