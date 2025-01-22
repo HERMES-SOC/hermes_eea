@@ -21,7 +21,7 @@ jobs:
         echo "Branch URL: $BRANCH_URL"
         sed -i '/hermes_eea/d' hermes-requirements.txt
         sed -i "1i hermes_eea @ $BRANCH_URL" hermes-requirements.txt
-        sed -i "s|hermes_eea @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea @ $BRANCH_URL |" hermes-requirements.txt
+        sed -i "s|hermes_eea @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea @ $BRANCH_URL|" hermes-requirements.txt
         cat hermes-requirements.txt
         docker build -t processing_function:latest . --network host
 
