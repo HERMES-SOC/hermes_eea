@@ -6,8 +6,10 @@ on:
     branches:
       - main
   pull_request:
-    branches:
-      - main
+  
+  # pull_request_target:
+  #   branches:
+  #     - main
 
 jobs:
   # Workflow to run test calibration using mock Lambda function test_data/test_<instrument>_event.json event
@@ -15,19 +17,19 @@ jobs:
   calibration-workflow:
     permissions:
       pull-requests: write
-    uses: HERMES-SOC/.github/.github/workflows/calibration.yml@main
+    uses: swxsoc/workflows/calibration.yml@main
   
   # Workflow to run linting on the codebase
   # https://github.com/HERMES-SOC/.github/blob/main/workflows/codestyle.yml
   linting-workflow:
-    uses: HERMES-SOC/.github/.github/workflows/codestyle.yml@main
+    uses: swxsoc/workflows/codestyle.yml@main
 
   # Workflow to build the documentation
   # https://github.com/HERMES-SOC/.github/blob/main/workflows/docs.yml
   docs-workflow:
-    uses: HERMES-SOC/.github/.github/workflows/docs.yml@main
+    uses: swxsoc/workflows/docs.yml@main
   
   # Workflow to run the test suite
   # https://github.com/HERMES-SOC/.github/blob/main/workflows/testing.yml
   testing-workflow:
-    uses: HERMES-SOC/.github/.github/workflows/testing.yml@main
+    uses: swxsoc/workflows/testing.yml@main
