@@ -1,6 +1,10 @@
+# This file is used to define the workflows that will be run on the repository
 name: SWxSOC Workflows
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     branches:
       - main
