@@ -14,18 +14,46 @@ jobs:
 
     - name: Build Lambda Docker Image
       run: |
-        cd ..
-        git clone https://github.com/HERMES-SOC/sdc_aws_processing_lambda.git
-        cd sdc_aws_processing_lambda/lambda_function
-        BRANCH_URL="git+https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git@${{ github.event.pull_request.head.ref }}"
+        # Define variables for the repository and branch
+        REPO_URL="https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
+        BRANCH_REF="${{ github.event.pull_request.head.ref }}"
+        BRANCH_URL="git+$REPO_URL@$BRANCH_REF"
+    
         echo "Branch URL: $BRANCH_URL"
-        sed -i '/hermes_eea/d' hermes-requirements.txt
-        sed -i "1i hermes_eea  @ $BRANCH_URL" hermes-requirements.txt
-        sed -i "s|hermes_eea  @ git+https://github.com/HERMES-SOC/hermes_eea.git|hermes_eea  @ $BRANCH_URL|" hermes-requirements.txt
-        cat hermes-requirements.txt
+    
+        # Clone the repository and navigate to the function directory
+        REPO_NAME=$(basename -s .git $REPO_URL)
+        git clone $REPO_URL ../$REPO_NAME
+        cd ../$REPO_NAME/lambda_function
+    
+        # Extract mission name from the repository name (first word)
+        PACKAGE_NAME=$(basename $(pwd))
+        MISSION_NAME=$(echo $PACKAGE_NAME | awk -F'_' '{print $1}')
+    
+        echo "Repository Name: $REPO_NAME"
+        echo "Package Name: $PACKAGE_NAME"
+        echo "Mission Name: $MISSION_NAME"
+    
+        # Define the mission-specific requirements file
+        REQUIREMENTS_FILE="$MISSION_NAME-requirements.txt"
+        echo "Using requirements file: $REQUIREMENTS_FILE"
+    
+        # Create or update the requirements file dynamically
+        if [[ ! -f $REQUIREMENTS_FILE ]]; then
+          touch $REQUIREMENTS_FILE
+        fi
+    
+        # Update requirements: remove old package and add the branch-specific package
+        sed -i '/hermes_eea/d' $REQUIREMENTS_FILE
+        sed -i "s|hermes|$MISSION_NAME|g" $REQUIREMENTS_FILE
+        echo "$MISSION_NAME_eea  @ $BRANCH_URL" >> $REQUIREMENTS_FILE
+    
+        echo "Updated $REQUIREMENTS_FILE:"
+        cat $REQUIREMENTS_FILE
+    
+        # Build the Docker image with the appropriate context and network
         docker build -t processing_function:latest . --network host
-
-        
+            
         
     - name: Run Lambda Docker Container
       run: |
