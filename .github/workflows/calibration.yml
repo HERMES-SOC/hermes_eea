@@ -14,46 +14,47 @@ jobs:
 
     - name: Build Lambda Docker Image
       run: |
-        # Define variables for the repository and branch
+        # Define the repository and branch dynamically
         REPO_URL="https://github.com/${{ github.event.pull_request.head.repo.full_name }}.git"
         BRANCH_REF="${{ github.event.pull_request.head.ref }}"
         BRANCH_URL="git+$REPO_URL@$BRANCH_REF"
     
         echo "Branch URL: $BRANCH_URL"
     
-        # Clone the repository and navigate to the function directory
-        REPO_NAME=$(basename -s .git $REPO_URL)
-        git clone $REPO_URL ../$REPO_NAME
-        cd ../$REPO_NAME/lambda_function
+        # Clone the Lambda function repository
+        git clone https://github.com/HERMES-SOC/sdc_aws_processing_lambda.git ../sdc_aws_processing_lambda
+        cd ../sdc_aws_processing_lambda/lambda_function
     
-        # Extract mission name from the repository name (first word)
-        PACKAGE_NAME=$(basename $(pwd))
-        MISSION_NAME=$(echo $PACKAGE_NAME | awk -F'_' '{print $1}')
+        # Determine the package name from the original package repository
+        ORIGINAL_PACKAGE_REPO=$(basename -s .git $REPO_URL)
+        PACKAGE_NAME=$(echo $ORIGINAL_PACKAGE_REPO | awk -F'_' '{print $2}')
     
-        echo "Repository Name: $REPO_NAME"
+        # Extract the mission name from the original package name
+        MISSION_NAME=$(echo $ORIGINAL_PACKAGE_REPO | awk -F'_' '{print $1}')
+    
+        echo "Original Package Repository: $ORIGINAL_PACKAGE_REPO"
         echo "Package Name: $PACKAGE_NAME"
         echo "Mission Name: $MISSION_NAME"
     
-        # Define the mission-specific requirements file
-        REQUIREMENTS_FILE="$MISSION_NAME-requirements.txt"
+        # Define mission-specific requirements file
+        REQUIREMENTS_FILE="${MISSION_NAME}-requirements.txt"
         echo "Using requirements file: $REQUIREMENTS_FILE"
     
-        # Create or update the requirements file dynamically
+        # Update the mission-specific requirements file
         if [[ ! -f $REQUIREMENTS_FILE ]]; then
           touch $REQUIREMENTS_FILE
         fi
     
-        # Update requirements: remove old package and add the branch-specific package
-        sed -i '/hermes_eea/d' $REQUIREMENTS_FILE
-        sed -i "s|hermes|$MISSION_NAME|g" $REQUIREMENTS_FILE
-        echo "$MISSION_NAME_eea  @ $BRANCH_URL" >> $REQUIREMENTS_FILE
+        # Remove old references to the package and add the branch-specific package
+        sed -i "/${PACKAGE_NAME}/d" $REQUIREMENTS_FILE
+        echo "${MISSION_NAME}_${PACKAGE_NAME}  @ $BRANCH_URL" >> $REQUIREMENTS_FILE
     
         echo "Updated $REQUIREMENTS_FILE:"
         cat $REQUIREMENTS_FILE
     
-        # Build the Docker image with the appropriate context and network
+        # Build the Docker image
         docker build -t processing_function:latest . --network host
-            
+    
         
     - name: Run Lambda Docker Container
       run: |
