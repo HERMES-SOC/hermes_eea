@@ -30,10 +30,11 @@ jobs:
       run: |
         pip install pip setuptools wheel --upgrade
         python -m pip install -e .[style]
-    - name: Lint with Black
+    - name: Lint with Ruff
       run: |
-        black --check --diff hermes_eea
-    - name: flake8
-      run: |
-        flake8 --count hermes_eea
+        # Get package name from repository name
+        PACKAGE_NAME=$(basename -s .git $GITHUB_REPOSITORY)
+        echo "Package Name: $PACKAGE_NAME"
+        # Lint with Ruff
+        ruff check $PACKAGE_NAME
 
