@@ -25,35 +25,36 @@ jobs:
         git clone https://github.com/HERMES-SOC/sdc_aws_processing_lambda.git ../sdc_aws_processing_lambda
         cd ../sdc_aws_processing_lambda/lambda_function
     
-        # Determine the package name from the original package repository
-        ORIGINAL_PACKAGE_REPO=$(basename -s .git $REPO_URL)
-        PACKAGE_NAME=$(echo $ORIGINAL_PACKAGE_REPO | awk -F'_' '{print $2}')
+        # Define the package name
+        PACKAGE_NAME="hermes_eea"
     
-        # Extract the mission name from the original package name
-        MISSION_NAME=$(echo $ORIGINAL_PACKAGE_REPO | awk -F'_' '{print $1}')
+        # Extract the mission name dynamically from the package directory or repo name
+        REPO_NAME=$(basename -s .git $REPO_URL)
+        MISSION_NAME=$(echo $REPO_NAME | awk -F'_' '{print $1}')
     
-        echo "Original Package Repository: $ORIGINAL_PACKAGE_REPO"
-        echo "Package Name: $PACKAGE_NAME"
+        echo "Repository Name: $REPO_NAME"
         echo "Mission Name: $MISSION_NAME"
+        echo "Package Name: $PACKAGE_NAME"
     
-        # Define mission-specific requirements file
+        # Define the mission-specific requirements file
         REQUIREMENTS_FILE="${MISSION_NAME}-requirements.txt"
         echo "Using requirements file: $REQUIREMENTS_FILE"
     
-        # Update the mission-specific requirements file
+        # Ensure the requirements file exists
         if [[ ! -f $REQUIREMENTS_FILE ]]; then
           touch $REQUIREMENTS_FILE
         fi
     
-        # Remove old references to the package and add the branch-specific package
+        # Remove any previous entries for the package and add the new branch URL as the first entry
         sed -i "/${PACKAGE_NAME}/d" $REQUIREMENTS_FILE
-        echo "${MISSION_NAME}_${PACKAGE_NAME}  @ $BRANCH_URL" >> $REQUIREMENTS_FILE
+        sed -i "1i ${PACKAGE_NAME}  @ $BRANCH_URL" $REQUIREMENTS_FILE
     
         echo "Updated $REQUIREMENTS_FILE:"
         cat $REQUIREMENTS_FILE
     
         # Build the Docker image
         docker build -t processing_function:latest . --network host
+    
     
         
     - name: Run Lambda Docker Container
