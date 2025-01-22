@@ -16,9 +16,7 @@ from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import SkymapFactory
 
 # cdflib -> spacepy
-from spacepy.pycdf import lib
 from hermes_eea.calibration.build_spectra import Hermes_EEA_Data_Processor
-from astropy.time import Time
 
 __all__ = [
     "process_file",

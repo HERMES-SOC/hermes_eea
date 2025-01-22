@@ -2,8 +2,6 @@ from hermes_core.timedata import HermesData
 import astropy.units as astropy_units
 from astropy.timeseries import TimeSeries
 from astropy.time import Time
-from hermes_core.timedata import HermesData
-from astropy.nddata import NDData
 from ndcube import NDCube, NDCollection
 import numpy as np
 from astropy.wcs import WCS

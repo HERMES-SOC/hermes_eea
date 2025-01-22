@@ -1,6 +1,5 @@
 import numpy as np
 from hermes_core import log
-from hermes_eea.io import EEA
 from hermes_eea.util.time import ccsds_to_cdf_time
 from hermes_eea import energies as voltages
 

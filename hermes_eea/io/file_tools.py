@@ -1,6 +1,5 @@
 from pathlib import Path
 from ccsdspy import FixedLength
-import numpy as np
 
 """
 This module provides a generic file reader.

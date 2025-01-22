@@ -1,11 +1,8 @@
-import sys
 from pathlib import Path
 import numpy as np
-import math
 
 from spacepy import pycdf
 from spacepy.pycdf import lib
-from astropy.time import Time
 
 """
 Purpose: To closely previous versions of the EEA output CDF with new ones.
@@ -27,7 +24,7 @@ def iso_obj_to_epoch(trange):
         try:
             c = cdflib.epochs.CDFepoch.parse(dateString)
             converted.append(c)
-        except ValueError as e:
+        except ValueError:
             print(t + " This time range value doesn't look too kosher...", file=stderr)
         # exit(1)
     return converted
