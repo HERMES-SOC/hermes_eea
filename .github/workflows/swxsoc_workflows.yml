@@ -1,4 +1,4 @@
-# This file is used to define the workflows that will be run on the repository 
+# This file is used to define the workflows that will be run on the repository
 # Link to workflows: https://github.com/swxsoc/workflows
 name: SWxSOC Workflows
 
