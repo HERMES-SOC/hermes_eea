@@ -12,23 +12,23 @@ on:
 
 jobs:
   # Workflow to run test calibration using mock Lambda function test_data/test_<instrument>_event.json event
-  # https://github.com/HERMES-SOC/.github/blob/main/workflows/calibration.yml
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/calibration.yml
   calibration-workflow:
     permissions:
       pull-requests: write
     uses: swxsoc/workflows/.github/workflows/calibration.yml@main
 
   # Workflow to run linting on the codebase
-  # https://github.com/HERMES-SOC/.github/blob/main/workflows/codestyle.yml
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/codestyle.yml
   linting-workflow:
     uses: swxsoc/workflows/.github/workflows/codestyle.yml@main
 
   # Workflow to build the documentation
-  # https://github.com/HERMES-SOC/.github/blob/main/workflows/docs.yml
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/docs.yml
   docs-workflow:
     uses: swxsoc/workflows/.github/workflows/docs.yml@main
 
   # Workflow to run the test suite
-  # https://github.com/HERMES-SOC/.github/blob/main/workflows/testing.yml
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/testing.yml
   testing-workflow:
     uses: swxsoc/workflows/.github/workflows/testing.yml@main
