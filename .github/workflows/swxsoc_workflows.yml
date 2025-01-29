@@ -2,6 +2,7 @@
 # Link to workflows: https://github.com/swxsoc/workflows
 name: SWxSOC Workflows
 
+# On push to main branch, run the workflows
 on:
   push:
     branches:
