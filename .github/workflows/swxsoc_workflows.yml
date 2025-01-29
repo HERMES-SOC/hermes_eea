@@ -12,6 +12,11 @@ on:
     branches:
       - main
 
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 0 * * *'
+
 jobs:
   # Workflow to run test calibration using mock Lambda function test_data/test_<instrument>_event.json event
   # https://github.com/swxsoc/workflows/blob/main/.github/workflows/calibration.yml
