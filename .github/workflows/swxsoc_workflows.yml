@@ -1,0 +1,41 @@
+# This file is used to define the workflows that will be run on the repository
+# Link to workflows: https://github.com/swxsoc/workflows
+name: SWxSOC Workflows
+
+# On push to main branch, run the workflows
+on:
+  push:
+    branches:
+      - main
+
+  pull_request_target:
+    branches:
+      - main
+
+  workflow_dispatch:
+
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  # Workflow to run test calibration using mock Lambda function test_data/test_<instrument>_event.json event
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/calibration.yml
+  calibration-workflow:
+    permissions:
+      pull-requests: write
+    uses: swxsoc/workflows/.github/workflows/calibration.yml@main
+
+  # Workflow to run linting on the codebase
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/codestyle.yml
+  linting-workflow:
+    uses: swxsoc/workflows/.github/workflows/codestyle.yml@main
+
+  # Workflow to build the documentation
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/docs.yml
+  docs-workflow:
+    uses: swxsoc/workflows/.github/workflows/docs.yml@main
+
+  # Workflow to run the test suite
+  # https://github.com/swxsoc/workflows/blob/main/.github/workflows/testing.yml
+  testing-workflow:
+    uses: swxsoc/workflows/.github/workflows/testing.yml@main
