@@ -17,7 +17,7 @@ from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
 from hermes_eea.SkymapFactory import skymap_factory
-from hermes_eea.Stepper.Stepper_Table import Stepper_Table
+from hermes_eea.Stepper.StepperTable import StepperTable
 
 # cdflib -> spacepy
 from spacepy.pycdf import lib
@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-def process_file(data_filename: Path, stepper: Stepper_Table) -> list:
+def process_file(data_filename: Path, stepper: StepperTable) -> list:
     """
     This is the entry point for the pipeline processing.
     It runs all of the various processing steps required
@@ -83,7 +83,7 @@ def process_file(data_filename: Path, stepper: Stepper_Table) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path, destination_dir, stepper: Stepper_Table) -> Path:
+def calibrate_file(data_filename: Path, destination_dir, stepper: StepperTable) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
@@ -100,7 +100,7 @@ def calibrate_file(data_filename: Path, destination_dir, stepper: Stepper_Table)
 
     """
     log.info(f"Calibrating file:{data_filename}.")
-    #stepper = Stepper_Table(hermes_eea.stepper_table)
+    #stepper = StepperTable(hermes_eea.stepper_table)
   
     file_metadata = parse_science_filename(data_filename.name)
 
@@ -274,7 +274,7 @@ def get_calibration_file(data_filename: Path, time=None) -> Path:
     Examples
     --------
     """
-    return os.path.join(hermes_eea._calibration_directory, data_filename)
+    return os.path.join(hermes_eea.getCalibrationDirectory(), data_filename)
 
 
 def read_calibration_file(calib_filename: Path):
