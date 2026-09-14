@@ -27,4 +27,8 @@ _calibration_directory = os.path.abspath(os.path.join(_data_directory, "calibrat
 
 log.info(f"hermes_eea version: {__version__}")
 
-stepper_table = "flight_stepper.txt"
+FirstStepperTable = "flight_stepper.txt"
+
+
+def getCalibrationDirectory():
+    return _calibration_directory

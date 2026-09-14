@@ -1,5 +1,7 @@
 {
-    "python.testing.pytestArgs": [],
+    "python.testing.pytestArgs": [
+        "hermes_eea"
+    ],
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.testing.unittestArgs": [

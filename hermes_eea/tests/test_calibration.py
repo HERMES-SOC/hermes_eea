@@ -8,13 +8,13 @@ import ccsdspy
 import hermes_eea
 from hermes_eea.io import read_ccsds
 import hermes_eea.calibration as calib
-from hermes_eea import _data_directory, stepper_table
+from hermes_eea import _data_directory, FirstStepperTable 
 from hermes_core.util.util import create_science_filename, parse_science_filename
 import sys
 from spacepy import pycdf
 from hermes_core import log
 import numpy as np
-from hermes_eea.Stepper.Stepper_Table import Stepper_Table
+from hermes_eea.Stepper.StepperTable import StepperTable
 
 @pytest.fixture(scope="session")  # this is a pytest fixture
 def small_level0_file(tmp_path_factory):
@@ -48,7 +48,7 @@ def test_process_file(small_level0_file):
         A Custom EEA SkymapFactory
         HermesData
     """
-    stepper = Stepper_Table(hermes_eea.stepper_table)
+    stepper = StepperTable(hermes_eea.FirstStepperTable)
     try:
         with tempfile.TemporaryDirectory() as tmpdirname:
             # Create a Temp Copy of the Original
