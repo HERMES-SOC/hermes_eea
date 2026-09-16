@@ -177,7 +177,23 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     pkt = ccsdspy.FixedLength.from_file(
         os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
     )
-    data = pkt.load(data_filename)
+    data = pkt.load(data_filename, include_primary_header=True)
+
+    unique_apids = sorted(set(data["CCSDS_APID"].tolist()))
+    log.info(f"Parsed APID(s): {unique_apids}")
+
+    # drop the primary header fields, callers only expect the science fields
+    for header_field in (
+        "CCSDS_VERSION_NUMBER",
+        "CCSDS_PACKET_TYPE",
+        "CCSDS_SECONDARY_FLAG",
+        "CCSDS_SEQUENCE_FLAG",
+        "CCSDS_APID",
+        "CCSDS_SEQUENCE_COUNT",
+        "CCSDS_PACKET_LENGTH",
+    ):
+        data.pop(header_field, None)
+
     return data
 
 

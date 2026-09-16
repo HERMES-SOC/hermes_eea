@@ -25,7 +25,16 @@ def skymap_factory(l0_cdf, stepper, myEEA):
     """
 
     # SHEID is 1
-    start_of_good_data = np.where(l0_cdf["SHEID"][:] == 1)[0][0]
+    sheid_science_packets = np.where(l0_cdf["SHEID"][:] == 1)[0]
+    if len(sheid_science_packets) == 0:
+        log.error(
+            "No science data (SHEID==1) packets found; nothing to process. "
+            f"First {min(20, len(l0_cdf['SHEID']))} SHEIDs found (SHEIDS which have science data are == 1): "
+            f"{l0_cdf['SHEID'][:20]}"
+        )
+        return
+    log.info(f"Number of science packets found {len(sheid_science_packets)}")
+    start_of_good_data = sheid_science_packets[0]
     # how much trailing not science data:
     integrates_at_end = np.where(l0_cdf["SHEID"][start_of_good_data:] == 0)
     # We are expecting integrates to be only at the beginning
@@ -132,11 +141,18 @@ def manage_stepper_table_energies_and_angles(beginning_packets, stepper, packet,
     stepvalues = {}
     stepvalues['energy'] = []
     stepvalues['elevation_angle'] = []
+
+    if len(beginning_packets) == 0:
+        log.warning("No sweep-start (STEP==0) packets found; nothing to process.")
+        stepvalues['energy'] = np.array(stepvalues['energy'])
+        stepvalues['elevation_angle'] = np.array(stepvalues['elevation_angle'])
+        return stepvalues
+
     finish = npackets
     try:
         if beginning_packets[packet + 1]:
             finish = beginning_packets[packet+1]
-    except TypeError:
+    except (TypeError, IndexError):
         pass  # we are in last incomplete packet
      
     for i in range(beginning_packets[packet], finish):
