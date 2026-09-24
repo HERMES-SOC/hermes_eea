@@ -44,6 +44,13 @@ Data Description
 |       |                                       | to surrounding plasma                                       |
 +-------+---------------------------------------+-------------------------------------------------------------+
 
+
+CCSDS Packet Structure
+=======================
+
+.. spacdocs:: hermes_eea.calibration.calibration.hermes_EEA_sci_packet_def
+
+
 Getting Data
 ============
 

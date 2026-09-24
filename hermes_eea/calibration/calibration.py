@@ -153,6 +153,14 @@ def calibrate_file(data_filename: Path, destination_dir: Path) -> Path:
     return output_filename
 
 
+hermes_EEA_sci_packet_def = ccsdspy.FixedLength.from_file(
+        Path(hermes_eea._data_directory) / "hermes_EEA_sci_packet_def.csv",
+        apid=260,
+        name="Hermes_EEA_sci",
+        description="Hermes EEA Science Packet"
+)
+
+
 def parse_l0_sci_packets(data_filename: Path) -> dict:
     """
     Parse a level 0 eea binary file containing CCSDS packets.
@@ -175,10 +183,7 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     """
     log.info(f"Parsing packets from file:{data_filename}.")
 
-    pkt = ccsdspy.FixedLength.from_file(
-        Path(hermes_eea._data_directory) / "hermes_EEA_sci_packet_def.csv"
-    )
-    data = pkt.load(data_filename)
+    data = hermes_EEA_sci_packet_def.load(data_filename)
     return data
 
 
