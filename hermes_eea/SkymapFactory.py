@@ -47,6 +47,7 @@ def skymap_factory(l0_cdf, stepper, myEEA):
     # nominally stepper_table_packets[0] will be 0 (no integrates at the beginning)
 
     # the starting packet of each sweep: (For our initial, testing stepper table, the STEPS climb from 0 to 163 repeatedly)
+    # this seems like an extra thing that the data would tell us which step in the stepper table it is doing.
     beginning_packets = (
         np.where((l0_cdf["STEP"][stepper_table_packets[0] :]) == 0)[0]
         + stepper_table_packets[0]
@@ -154,11 +155,12 @@ def manage_stepper_table_energies_and_angles(beginning_packets, stepper, packet,
             finish = beginning_packets[packet+1]
     except (TypeError, IndexError):
         pass  # we are in last incomplete packet
-     
+    
+    # this worked with original stepper table and the new one 
     for i in range(beginning_packets[packet], finish):
-        
-        stepvalues['energy'].append(stepper.v_energies[stepper.energies[i]])
-        stepvalues['elevation_angle'].append(stepper.v_defl[stepper.deflections[i]])
+        step_in_sweep = i - beginning_packets[packet]  # table row is relative to the sweep start, not the file
+        stepvalues['energy'].append(stepper.energies[step_in_sweep])
+        stepvalues['elevation_angle'].append(stepper.deflections[step_in_sweep])
     stepvalues['energy'] = np.array( stepvalues['energy'] ) 
     stepvalues['elevation_angle'] = np.array( stepvalues['elevation_angle'] ) 
     return stepvalues

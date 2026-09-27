@@ -1,40 +1,8 @@
-import hermes_eea.calibration as calib
 from pathlib import Path
 import hermes_eea
 from hermes_eea.io import read_file
 import os
 import numpy as np
-
-
-# Which stepper table file applies to which L0 input file.
-STEPPER_TABLE_FOR_FILE = {
-    "hermes_EEA_l0_2023042-000000_v0.bin": "flight_stepper.txt",
-    "hermes_EEA_l0_2026023-000000_v0.bin": "ptb_esastepped_undeflected_stepper.txt",
-}
-
-
-def get_stepper_table_for_file(data_filename) -> "StepperTable":
-    """Look up and build the StepperTable that applies to a given L0 input file.
-
-    Parameters
-    ----------
-    data_filename: str or Path
-        The L0 input filename (only the basename is used for the lookup).
-
-    Raises
-    ------
-    KeyError
-        If no stepper table is registered for this filename.
-    """
-    name = os.path.basename(str(data_filename))
-    try:
-        stepper_table_name = STEPPER_TABLE_FOR_FILE[name]
-    except KeyError:
-        raise KeyError(
-            f"No stepper table is registered for input file {name!r}. "
-            f"Known files: {sorted(STEPPER_TABLE_FOR_FILE)}"
-        )
-    return StepperTable(stepper_table_name)
 
 
 class StepperTable():
@@ -96,8 +64,24 @@ class StepperTable():
           1.63800000e04,
         ]
    
-
     def parse_stepper_table(self):
+        """
+        Parse the stepper table file and populate the energies and deflections lists.
+        """
+        lines = read_file(os.path.join(self.stepper_table_file))
+        self.energies = []
+        self.deflections = []
+        for line in lines:
+            if "#" not in line:
+                try:
+                    [energy, deflection] = line.split(",")
+                    self.energies.append(float(energy))
+                    self.deflections.append(float(deflection))
+                except ValueError:
+                    continue
+            
+            
+    def parse_old_stepper_table(self):
         """
         Given a calibration, return the calibration structure.
     
