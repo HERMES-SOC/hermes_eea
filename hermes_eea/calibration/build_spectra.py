@@ -8,6 +8,30 @@ from ndcube import NDCube, NDCollection
 import numpy as np
 from astropy.wcs import WCS
 from spacepy.pycdf import lib
+import csv
+import os
+import hermes_eea
+
+
+def _read_sci_field_catdesc() -> dict:
+    """Read the CATDESC text for each field from the description column of
+    hermes_EEA_sci_packet_def.csv, so descriptions stay in sync with the packet
+    definition instead of being duplicated in code.
+    """
+    csv_path = os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
+    with open(csv_path, "r") as fp:
+        reader = csv.DictReader(fp, skipinitialspace=True)
+        return {row["name"].strip(): row["description"].strip() for row in reader}
+
+
+# CATDESC text for spectra variables that are derived (via SkymapFactory/StepperTable)
+# rather than decoded directly from a packet field, so they have no row in
+# hermes_EEA_sci_packet_def.csv or the stepper table files.
+DERIVED_SPECTRA_CATDESC = {
+    "hermes_eea_settle_step_times": "Settle for Each Step",
+    "hermes_eea_energy_profile": "Energy Profile",
+    "hermes_eea_deflection_angles": "Deflection Angles",
+}
 
 
 class Hermes_EEA_Data_Processor:
@@ -59,6 +83,7 @@ class Hermes_EEA_Data_Processor:
         This is a solution for loading multi-dimension variables and their metadata into CDF
         HermesData is used for "regular" time-series variables such as the Epoch and stats variables above.
         """
+        catdesc = _read_sci_field_catdesc()
 
         self.multiple_spectra = NDCollection(
             [
@@ -67,7 +92,7 @@ class Hermes_EEA_Data_Processor:
                     NDCube(
                         data=np.array(self.EEA.usec),
                         wcs=WCS(naxis=2),
-                        meta={"CATDESC": "Settle for Each Step"},
+                        meta={"CATDESC": DERIVED_SPECTRA_CATDESC["hermes_eea_settle_step_times"]},
                         unit=astropy_units.s,
                     ),
                 ),
@@ -76,7 +101,7 @@ class Hermes_EEA_Data_Processor:
                     NDCube(
                         data=np.array(self.EEA.EnergyLabels),
                         wcs=WCS(naxis=2),
-                        meta={"CATDESC": "Energy Profile"},
+                        meta={"CATDESC": DERIVED_SPECTRA_CATDESC["hermes_eea_energy_profile"]},
                         unit=astropy_units.eV,
                     ),
                 ),
@@ -85,7 +110,7 @@ class Hermes_EEA_Data_Processor:
                     NDCube(
                         data=np.array(self.EEA.SunAngles),
                         wcs=WCS(naxis=2),
-                        meta={"CATDESC": "Deflection Angles"},
+                        meta={"CATDESC": DERIVED_SPECTRA_CATDESC["hermes_eea_deflection_angles"]},
                         unit=astropy_units.deg,
                     ),
                 ),
@@ -94,7 +119,7 @@ class Hermes_EEA_Data_Processor:
                     NDCube(
                         data=np.array(self.EEA.ACCUM),
                         wcs=WCS(naxis=3),
-                        meta={"CATDESC": "EEA raw skymap counts"},
+                        meta={"CATDESC": catdesc["ACCUM"]},
                         unit=astropy_units.dimensionless_unscaled,
                     ),
                 ),
@@ -103,31 +128,16 @@ class Hermes_EEA_Data_Processor:
                     NDCube(
                         data=np.array(self.EEA.Counter1),
                         wcs=WCS(naxis=2),
-                        meta={
-                            "CATDESC": "Estimate 1 of the number of counts in this accumulation"
-                        },
-                        unit=astropy_units.dimensionless_unscaled,
-                    ),
-                ),
-                (
-                    "hermes_eea_counter1",
-                    NDCube(
-                        data=np.array(self.EEA.Counter1),
-                        wcs=WCS(naxis=2),
-                        meta={
-                            "CATDESC": "Estimate 2 of the number of counts in this accumulation"
-                        },
+                        meta={"CATDESC": catdesc["COUNTER1"]},
                         unit=astropy_units.dimensionless_unscaled,
                     ),
                 ),
                 (
                     "hermes_eea_counter2",
                     NDCube(
-                        data=np.array(self.EEA.Counter1),
+                        data=np.array(self.EEA.Counter2),
                         wcs=WCS(naxis=2),
-                        meta={
-                            "CATDESC": "Estimate 3 of the number of counts in this accumulation"
-                        },
+                        meta={"CATDESC": catdesc["COUNTER2"]},
                         unit=astropy_units.dimensionless_unscaled,
                     ),
                 ),

@@ -129,10 +129,10 @@ def verify_l1a(stepper, output_l1a):
 
             # 40% seems like a lot... This is because this is not just for one packet but a whole sweep 
             # that's why I created my STATS variable.
-            # 1 is nominal but 40% is possible for small counts
+            # is nominal but 40% is possible for small counts
             diff = int(0.4 * total)
 
-            log.info("totals: skymap:%d counter:%d" % (total, cntsum))
+            # log.info("totals: skymap:%d counter:%d" % (total, cntsum))
             # assert abs(cntsum - total) <= diff
 
     shutil.copy(output_l1a, "/workspaces/hermes_eea/hermes_eea/data")

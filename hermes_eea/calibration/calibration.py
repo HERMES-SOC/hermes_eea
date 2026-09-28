@@ -5,6 +5,7 @@ A module for all things calibration.
 from datetime import datetime, timezone, timedelta
 import random
 import os.path
+import csv
 from pathlib import Path
 import sys
 import ccsdspy
@@ -257,44 +258,28 @@ def parse_hk_packets(data_filename: Path) -> dict:
     return data
 
 
-# CATDESC text for each field in hermes_EEA_hk_packet_def.csv (excluding SHCOARSE/SHFINE,
-# which are consumed to derive the Epoch rather than stored as their own measurement).
-HK_FIELD_CATDESC = {
-    "SHFILL": "CCSDS Packet 2nd Header Fill",
-    "SHEID": "CCSDS Packet 2nd Header Extended ID",
-    "FILL": "Fill",
-    "UPLOAD_STATE": "Upload Data sub-state",
-    "EEA_OPMODE": "EEA operating mode",
-    "FAILFC": "EEA failed TC function code",
-    "FILL2": "Fill",
-    "SAFESRC": "EEA safe mode source",
-    "FILL3": "Fill",
-    "TCBUFSEU": "EEA TC buffer SEU",
-    "TCTMRERR": "EEA TC buffer TMR error",
-    "TMBUFSEU": "EEA TM fifo SEU",
-    "TMTMRERR": "EEA TM fifo TMR error",
-    "TMUFIOW": "EEA TM fifo underflow error",
-    "T_FEE": "EEA Front End Electronics Board temp",
-    "FILL4": "Fill",
-    "V_5_7I": "EEA 5.7V current monitor",
-    "V_5_7V": "EEA 5.7V voltage monitor",
-    "V_NS_7V": "EEA -5.7V voltage monitor",
-    "V_11": "EEA 11V current monitor",
-    "V_11V": "EEA 11V voltage monitor",
-    "V_3_3V": "EEA 3.3V Voltage monitor",
-    "V_3_3I": "EEA 3.3V current monitor",
-    "T_LVPS": "EEA LVPS temperature",
-    "ANODE_V": "Anode_mon",
-    "ESA_BULK_V": "ESA_Bulk_mon",
-    "DEF_BULK_V": "Deflector_Bulk_mon",
-    "FILL5": "Fill",
-    "V_IO_PLUG": "V/10 Plug State",
-    "STPR_TBL": "Stepper Table Selection",
-    "STPR_EN": "Stepper Enable bit",
-    "PPS_DUR": "Duration since last PPS",
-    "TIME_DUR": "Duration since last Time Packet",
-    "CKSUM16": "Checksum",
-}
+def _read_hk_field_catdesc() -> dict:
+    """Read the CATDESC text for each HK field from the description column of
+    hermes_EEA_hk_packet_def.csv, so field descriptions stay in sync with the
+    packet definition instead of being duplicated in code.
+    """
+    csv_path = os.path.join(hermes_eea._data_directory, "hermes_EEA_hk_packet_def.csv")
+    with open(csv_path, "r") as fp:
+        reader = csv.DictReader(fp, skipinitialspace=True)
+        return {row["name"].strip(): row["description"].strip() for row in reader}
+
+
+def _read_hk_fill_field_names() -> set:
+    """Names of HK fields declared as data_type "fill" in hermes_EEA_hk_packet_def.csv.
+
+    ccsdspy only bitmasks "uint"/"int" fields, not "fill", so sub-byte fill fields come
+    back containing raw, unmasked bits from whatever neighboring field shares that byte.
+    Their decoded values are meaningless and shouldn't be written out as measurements.
+    """
+    csv_path = os.path.join(hermes_eea._data_directory, "hermes_EEA_hk_packet_def.csv")
+    with open(csv_path, "r") as fp:
+        reader = csv.DictReader(fp, skipinitialspace=True)
+        return {row["name"].strip() for row in reader if row["data_type"].strip().lower() == "fill"}
 
 
 def l0_hk_data_to_cdf(data: dict, original_filename: Path, destination_dir: Path) -> Path:
@@ -318,31 +303,30 @@ def l0_hk_data_to_cdf(data: dict, original_filename: Path, destination_dir: Path
     """
     file_metadata = parse_science_filename(original_filename.name)
 
-    cdf_filename = destination_dir / create_science_filename(
-        file_metadata["instrument"],
-        file_metadata["time"],
-        "l1",
-        f'1.0.{file_metadata["version"]}',
-    )
-
     epoch = ccsds_to_cdf_time.help_convert_eaa(data)
     iso_datetimes = Time([lib.tt2000_to_datetime(e) for e in epoch])
     hk_timeseries = TimeSeries(time=iso_datetimes)
 
     bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
+    # Distinguishes this from the sci L1 CDF in the output filename (Logical_file_id).
+    bare_attrs["Instrument_mode"] = "hk"
     hermes_eea_hk_data = HermesData(timeseries=hk_timeseries, meta=bare_attrs)
 
-    # SHCOARSE/SHFINE were only needed to derive the epoch above, everything else
-    # is stored as raw, dimensionless counts for now since calibration curves for
-    # voltages/temperatures are not yet defined (same approach as the science data).
+    hk_catdesc = _read_hk_field_catdesc()
+    hk_fill_fields = _read_hk_fill_field_names()
+
+    # SHCOARSE/SHFINE were only needed to derive the epoch above. FILL fields are skipped
+    # since ccsdspy returns their raw, unmasked bits (see _read_hk_fill_field_names).
+    # Everything else is stored as raw, dimensionless counts for now since calibration
+    # curves for voltages/temperatures are not yet defined (same approach as the science data).
     for field, values in data.items():
-        if field in ("SHCOARSE", "SHFINE"):
+        if field in ("SHCOARSE", "SHFINE") or field in hk_fill_fields:
             continue
         try:
             hermes_eea_hk_data.add_measurement(
                 f"hermes_eea_{field.lower()}",
                 astropy_units.Quantity(values, astropy_units.dimensionless_unscaled),
-                meta={"CATDESC": HK_FIELD_CATDESC.get(field, f"HK field {field}")},
+                meta={"CATDESC": hk_catdesc.get(field, f"HK field {field}")},
             )
         except Exception as e:
             log.warning(f"Could not add HK field {field}: {e}")
