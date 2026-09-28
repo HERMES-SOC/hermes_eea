@@ -6,6 +6,7 @@ from datetime import datetime, timezone, timedelta
 import random
 import os.path
 import csv
+import struct
 from pathlib import Path
 import sys
 import ccsdspy
@@ -41,7 +42,19 @@ __all__ = [
 ]
 
 
-def process_file(data_filename: Path, stepper: StepperTable = None, apid: int = None) -> list:
+def _peek_apid(data_filename: Path) -> int:
+    """Read the CCSDS APID out of the first packet's primary header (its first 2
+    bytes), without needing to know which packet definition (sci vs hk) applies yet.
+    """
+    with open(data_filename, "rb") as fh:
+        header = fh.read(2)
+    if len(header) < 2:
+        raise ValueError(f"{data_filename} is too short to contain a CCSDS primary header.")
+    first_word = struct.unpack(">H", header)[0]
+    return first_word & 0x07FF
+
+
+def process_file(data_filename: Path) -> list:
     """
     This is the entry point for the pipeline processing.
     It runs all of the various processing steps required
@@ -77,6 +90,11 @@ def process_file(data_filename: Path, stepper: StepperTable = None, apid: int = 
 
     # Get the Directory of the File
     destination_dir = data_filename.parent
+
+    # Determine the APID (and, for science data, the StepperTable) from the file itself.
+    apid = _peek_apid(data_filename)
+    # So far there is only one StepperTable in use for science data.
+    stepper = StepperTable(hermes_eea.FirstStepperTable) if apid == 260 else None
 
     # Calibrate the Input File
     calibrated_file = calibrate_file(data_filename, destination_dir, stepper, apid)
