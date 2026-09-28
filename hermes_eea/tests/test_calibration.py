@@ -15,7 +15,7 @@ from spacepy import pycdf
 from hermes_core import log
 import numpy as np
 from hermes_eea.Stepper.StepperTable import StepperTable
-from hermes_eea.tests.conftest import STEPPER_TABLE_FOR_FILE, get_stepper_table_for_file
+from hermes_eea.tests.conftest import STEPPER_TABLE_FOR_FILE, get_stepper_table_for_file, get_apid_for_file
 
 @pytest.fixture(
     scope="session",
@@ -37,11 +37,18 @@ def test_read_ccsdspy(small_level0_file):
     -------
 
     """
+    apid = get_apid_for_file(small_level0_file)
+    # HK and science packets use different fixed-length layouts.
+    is_hk = apid == 265
+    packet_def_csv = "hermes_EEA_hk_packet_def.csv" if is_hk else "hermes_EEA_sci_packet_def.csv"
     pkt = ccsdspy.FixedLength.from_file(
-        os.path.join(hermes_eea._data_directory, "hermes_EEA_sci_packet_def.csv")
+        os.path.join(hermes_eea._data_directory, packet_def_csv)
     )
     result = read_ccsds(small_level0_file, pkt)
-    assert len(result["ACCUM"]) > 0
+    if is_hk:
+        assert len(result["SHCOARSE"]) > 0
+    else:
+        assert len(result["ACCUM"]) > 0
 
 
 def test_process_file(small_level0_file):
@@ -54,18 +61,21 @@ def test_process_file(small_level0_file):
     """
     try:
         stepper = get_stepper_table_for_file(small_level0_file)
+        apid = get_apid_for_file(small_level0_file)
     except KeyError as e:
-        pytest.fail(f"Failed to get stepper table: {e}")
-    except ValueError as e:
-        log.info(f"Failed to get stepper table: {e}, probably HK file")
+        pytest.fail(f"Failed to get stepper table/APID: {e}")
     try:
         with tempfile.TemporaryDirectory() as tmpdirname:
             # Create a Temp Copy of the Original
             temp_test_file_path = Path(tmpdirname, small_level0_file.name)
             shutil.copy(small_level0_file, temp_test_file_path)
             # Process the File
-            output_files = calib.process_file(temp_test_file_path, stepper)
-            verify_l1a(stepper, output_files[0])
+            output_files = calib.process_file(temp_test_file_path, stepper, apid)
+            if apid == 260:
+                verify_l1a(stepper, output_files[0])
+            else:
+                # HK verification, once it exists. Copy out for inspection in the meantime.
+                shutil.copy(output_files[0], "/workspaces/hermes_eea/hermes_eea/data")
 
     # Ensure the temporary directory is cleaned up even if an exception is raised (needed for Windows)
     except PermissionError:
