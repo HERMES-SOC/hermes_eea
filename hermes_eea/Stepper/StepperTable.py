@@ -8,6 +8,8 @@ import numpy as np
 class StepperTable():
 
     def __init__(self, stepper_table: Path):
+        if not stepper_table:
+            raise ValueError(f"stepper_table must be a non-empty filename, got {stepper_table!r}")
         self.stepper_table_file = os.path.join(hermes_eea._calibration_directory, stepper_table)
         self.parse_stepper_table()
         self.n_defl     = len(get_unique_list(self.deflections))

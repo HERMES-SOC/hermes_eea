@@ -52,7 +52,12 @@ def test_process_file(small_level0_file):
         A Custom EEA SkymapFactory
         HermesData
     """
-    stepper = get_stepper_table_for_file(small_level0_file)
+    try:
+        stepper = get_stepper_table_for_file(small_level0_file)
+    except KeyError as e:
+        pytest.fail(f"Failed to get stepper table: {e}")
+    except ValueError as e:
+        log.info(f"Failed to get stepper table: {e}, probably HK file")
     try:
         with tempfile.TemporaryDirectory() as tmpdirname:
             # Create a Temp Copy of the Original

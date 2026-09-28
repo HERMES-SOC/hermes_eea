@@ -34,7 +34,7 @@ __all__ = [
 ]
 
 
-def process_file(data_filename: Path, stepper: StepperTable) -> list:
+def process_file(data_filename: Path, stepper: StepperTable = None) -> list:
     """
     This is the entry point for the pipeline processing.
     It runs all of the various processing steps required
@@ -83,7 +83,7 @@ def process_file(data_filename: Path, stepper: StepperTable) -> list:
     return output_files
 
 
-def calibrate_file(data_filename: Path, destination_dir, stepper: StepperTable) -> Path:
+def calibrate_file(data_filename: Path, destination_dir, stepper: StepperTable = None) -> Path:
     """
     Given an input data file, raise it to the next level
     (e.g. level 0 to level 1, level 1 to quicklook) it and return a new file.
@@ -103,12 +103,16 @@ def calibrate_file(data_filename: Path, destination_dir, stepper: StepperTable) 
     #stepper = StepperTable(hermes_eea.stepper_table)
   
     file_metadata = parse_science_filename(data_filename.name)
-
+    
     # check if level 0 binary file, if so call appropriate functions
     if (
         file_metadata["instrument"] == hermes_eea.INST_NAME
         and file_metadata["level"] == "l0"
     ):
+        if stepper is None:
+            log.info(f"No StepperTable provided for level-0 science file {data_filename}.")
+            pass
+          
         # call CCSDSPY to parse our packets.
         data = parse_l0_sci_packets(data_filename)
         level1_filename = l0_sci_data_to_cdf(stepper, data, data_filename, destination_dir)
@@ -150,6 +154,7 @@ def calibrate_file(data_filename: Path, destination_dir, stepper: StepperTable) 
         raise ValueError(f"The file {data_filename} is not recognized.")
 
     return output_filename
+
 
 
 def parse_l0_sci_packets(data_filename: Path) -> dict:
