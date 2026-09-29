@@ -13,27 +13,23 @@ on:
     - cron: 0 0 * * * # Scheduled run every day at midnight
 jobs:
   build:
-
     runs-on: ${{ matrix.platform }}
     strategy:
       fail-fast: false
       matrix:
         platform: [ubuntu-latest]
-        python-version: [3.9]
+        python-version: ["3.13"]
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         pip install pip setuptools wheel --upgrade
-        # Install spacepy without build isolation to avoid issues with numpy
-        pip install numpy==1.26.3
-        pip install spacepy==0.4.1 --no-build-isolation
-        python -m pip install -e '.[style]'
+        python -m pip install -e .[style]
     - name: Lint with Black
       run: |
         black --check --diff hermes_eea

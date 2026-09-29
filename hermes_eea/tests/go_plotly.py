@@ -1,5 +1,5 @@
-import os
 import sys
+from pathlib import Path
 import numpy as np
 import math
 
@@ -40,7 +40,7 @@ def read_data(file):
         print("file len:", length)
         return cdffile
     except Exception:
-        if not os.path.exists(file):
+        if not Path(file).exists():
             print(file + " does not exist")
             return None
 

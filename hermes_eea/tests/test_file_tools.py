@@ -1,5 +1,6 @@
 import os
 import hermes_eea
+from pathlib import Path
 from hermes_eea.io.file_tools import read_file
 from hermes_eea.Stepper.StepperTable import StepperTable
 from pathlib import Path
