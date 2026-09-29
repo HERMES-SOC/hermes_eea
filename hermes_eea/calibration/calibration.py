@@ -2,18 +2,28 @@
 A module for all things calibration.
 """
 
+from datetime import datetime, timezone, timedelta
+import random
+import os.path
+import csv
+import struct
 from pathlib import Path
 import sys
 import ccsdspy
 import numpy as np
+import astropy.units as astropy_units
+from astropy.timeseries import TimeSeries
 
 from hermes_core import log
 from hermes_core.util.util import create_science_filename, parse_science_filename
+from hermes_core.timedata import HermesData
 import hermes_eea
 from hermes_eea.io import read_file
 import hermes_eea.calibration as calib
 from hermes_eea.io.EEA import EEA
-from hermes_eea.SkymapFactory import SkymapFactory
+from hermes_eea.SkymapFactory import skymap_factory
+from hermes_eea.Stepper.StepperTable import StepperTable
+from hermes_eea.util.time import ccsds_to_cdf_time
 
 # cdflib -> spacepy
 from spacepy.pycdf import lib
@@ -23,11 +33,25 @@ from astropy.time import Time
 __all__ = [
     "process_file",
     "parse_l0_sci_packets",
+    "parse_hk_packets",
     "l0_sci_data_to_cdf",
+    "l0_hk_data_to_cdf",
     "calibrate_file",
     "get_calibration_file",
     "read_calibration_file",
 ]
+
+
+def _peek_apid(data_filename: Path) -> int:
+    """Read the CCSDS APID out of the first packet's primary header (its first 2
+    bytes), without needing to know which packet definition (sci vs hk) applies yet.
+    """
+    with open(data_filename, "rb") as fh:
+        header = fh.read(2)
+    if len(header) < 2:
+        raise ValueError(f"{data_filename} is too short to contain a CCSDS primary header.")
+    first_word = struct.unpack(">H", header)[0]
+    return first_word & 0x07FF
 
 
 def process_file(data_filename: Path) -> list:
@@ -71,8 +95,13 @@ def process_file(data_filename: Path) -> list:
     # Get the Directory of the File
     destination_dir = data_filename.parent
 
+    # Determine the APID (and, for science data, the StepperTable) from the file itself.
+    apid = _peek_apid(data_filename)
+    # So far there is only one StepperTable in use for science data.
+    stepper = StepperTable(hermes_eea.FirstStepperTable) if apid == 260 else None
+
     # Calibrate the Input File
-    calibrated_file = calibrate_file(data_filename, destination_dir)
+    calibrated_file = calibrate_file(data_filename, destination_dir, stepper, apid)
     output_files.append(calibrated_file)
 
     # Add Plots to the Output Files if we want
@@ -102,17 +131,22 @@ def calibrate_file(data_filename: Path, destination_dir: Path) -> Path:
 
     """
     log.info(f"Calibrating file:{data_filename}.")
-
+    # stepper = StepperTable(hermes_eea.stepper_table)
+  
     file_metadata = parse_science_filename(data_filename.name)
-
+    
     # check if level 0 binary file, if so call appropriate functions
     if (
         file_metadata["instrument"] == hermes_eea.INST_NAME
-        and file_metadata["level"] == "l0"
+        and apid == 260
     ):
+        if stepper is None:
+            log.info(f"No StepperTable provided for level-0 science file {data_filename}.")
+            pass
+          
         # call CCSDSPY to parse our packets.
         data = parse_l0_sci_packets(data_filename)
-        level1_filename = l0_sci_data_to_cdf(data, data_filename, destination_dir)
+        level1_filename = l0_sci_data_to_cdf(stepper, data, data_filename, destination_dir)
         output_filename = level1_filename
     elif (
         file_metadata["instrument"] == hermes_eea.INST_NAME
@@ -147,10 +181,15 @@ def calibrate_file(data_filename: Path, destination_dir: Path) -> Path:
         # here
         data = parse_l0_sci_packets(data_filename)
         output_filename = ql_filename
+    elif apid == 265:
+        log.info(f"Processing HK file: {data_filename}.")
+        data = parse_hk_packets(data_filename)
+        output_filename = l0_hk_data_to_cdf(data, data_filename, destination_dir)
     else:
         raise ValueError(f"The file {data_filename} is not recognized.")
 
     return output_filename
+
 
 
 def parse_l0_sci_packets(data_filename: Path) -> dict:
@@ -178,12 +217,154 @@ def parse_l0_sci_packets(data_filename: Path) -> dict:
     pkt = ccsdspy.FixedLength.from_file(
         Path(hermes_eea._data_directory) / "hermes_EEA_sci_packet_def.csv"
     )
-    data = pkt.load(data_filename)
+    data = pkt.load(data_filename, include_primary_header=True)
+
+    unique_apids = sorted(set(data["CCSDS_APID"].tolist()))
+    log.info(f"Parsed APID(s): {unique_apids}")
+
+    # drop the primary header fields, callers only expect the science fields
+    for header_field in (
+        "CCSDS_VERSION_NUMBER",
+        "CCSDS_PACKET_TYPE",
+        "CCSDS_SECONDARY_FLAG",
+        "CCSDS_SEQUENCE_FLAG",
+        "CCSDS_APID",
+        "CCSDS_SEQUENCE_COUNT",
+        "CCSDS_PACKET_LENGTH",
+    ):
+        data.pop(header_field, None)
+
     return data
 
 
-def l0_sci_data_to_cdf(
-    data: dict, original_filename: Path, destination_dir: Path
+def parse_hk_packets(data_filename: Path) -> dict:
+    """
+    Parse a level 0 eea housekeeping binary file containing CCSDS packets.
+
+    Parameters
+    ----------
+    data_filename: str
+        Fully specificied filename
+
+    Returns
+    -------
+    result: dict
+        A dictionary of arrays which includes the ccsds header fields
+
+    Examples
+    --------
+    >>> import hermes_eea.calibration as calib
+    >>> data_filename = "hermes_EEA_hk_l0_2022339-000000_v0.bin"
+    >>> data = calib.parse_hk_packets(data_filename)  # doctest: +SKIP
+    """
+    log.info(f"Parsing HK packets from file:{data_filename}.")
+
+    pkt = ccsdspy.FixedLength.from_file(
+        os.path.join(hermes_eea._data_directory, "hermes_EEA_hk_packet_def.csv")
+    )
+    data = pkt.load(data_filename, include_primary_header=True)
+
+    unique_apids = sorted(set(data["CCSDS_APID"].tolist()))
+    log.info(f"Parsed APID(s): {unique_apids}")
+
+    # drop the primary header fields, callers only expect the hk fields
+    for header_field in (
+        "CCSDS_VERSION_NUMBER",
+        "CCSDS_PACKET_TYPE",
+        "CCSDS_SECONDARY_FLAG",
+        "CCSDS_SEQUENCE_FLAG",
+        "CCSDS_APID",
+        "CCSDS_SEQUENCE_COUNT",
+        "CCSDS_PACKET_LENGTH",
+    ):
+        data.pop(header_field, None)
+
+    return data
+
+
+def _read_hk_field_catdesc() -> dict:
+    """Read the CATDESC text for each HK field from the description column of
+    hermes_EEA_hk_packet_def.csv, so field descriptions stay in sync with the
+    packet definition instead of being duplicated in code.
+    """
+    csv_path = os.path.join(hermes_eea._data_directory, "hermes_EEA_hk_packet_def.csv")
+    with open(csv_path, "r") as fp:
+        reader = csv.DictReader(fp, skipinitialspace=True)
+        return {row["name"].strip(): row["description"].strip() for row in reader}
+
+
+def _read_hk_fill_field_names() -> set:
+    """Names of HK fields declared as data_type "fill" in hermes_EEA_hk_packet_def.csv.
+
+    ccsdspy only bitmasks "uint"/"int" fields, not "fill", so sub-byte fill fields come
+    back containing raw, unmasked bits from whatever neighboring field shares that byte.
+    Their decoded values are meaningless and shouldn't be written out as measurements.
+    """
+    csv_path = os.path.join(hermes_eea._data_directory, "hermes_EEA_hk_packet_def.csv")
+    with open(csv_path, "r") as fp:
+        reader = csv.DictReader(fp, skipinitialspace=True)
+        return {row["name"].strip() for row in reader if row["data_type"].strip().lower() == "fill"}
+
+
+def l0_hk_data_to_cdf(data: dict, original_filename: Path, destination_dir: Path) -> Path:
+    """
+    Write level 0 eea housekeeping data to a level 1 cdf file.
+
+    Parameters
+    ----------
+    data: dict
+        A dictionary of arrays which includes the housekeeping fields
+        (as returned by parse_hk_packets), including SHCOARSE/SHFINE.
+    original_filename: Path
+        The Path to the originating file.
+    destination_dir: Path
+        The directory to write the output cdf file to.
+
+    Returns
+    -------
+    output_filename: Path
+        Fully specificied filename of cdf file
+    """
+    file_metadata = parse_science_filename(original_filename.name)
+
+    epoch = ccsds_to_cdf_time.help_convert_eaa(data)
+    iso_datetimes = Time([lib.tt2000_to_datetime(e) for e in epoch])
+    hk_timeseries = TimeSeries(time=iso_datetimes)
+
+    bare_attrs = HermesData.global_attribute_template("eea", "l1", "1.0.0")
+    # Distinguishes this from the sci L1 CDF in the output filename (Logical_file_id).
+    bare_attrs["Instrument_mode"] = "hk"
+    hermes_eea_hk_data = HermesData(timeseries=hk_timeseries, meta=bare_attrs)
+
+    hk_catdesc = _read_hk_field_catdesc()
+    hk_fill_fields = _read_hk_fill_field_names()
+
+    # SHCOARSE/SHFINE were only needed to derive the epoch above. FILL fields are skipped
+    # since ccsdspy returns their raw, unmasked bits (see _read_hk_fill_field_names).
+    # Everything else is stored as raw, dimensionless counts for now since calibration
+    # curves for voltages/temperatures are not yet defined (same approach as the science data).
+    for field, values in data.items():
+        if field in ("SHCOARSE", "SHFINE") or field in hk_fill_fields:
+            continue
+        try:
+            hermes_eea_hk_data.add_measurement(
+                f"hermes_eea_{field.lower()}",
+                astropy_units.Quantity(values, astropy_units.dimensionless_unscaled),
+                meta={"CATDESC": hk_catdesc.get(field, f"HK field {field}")},
+            )
+        except Exception as e:
+            log.warning(f"Could not add HK field {field}: {e}")
+
+    try:
+        cdf_path = hermes_eea_hk_data.save(destination_dir, True)
+    except Exception as e:
+        log.error(e)
+        sys.exit(2)
+
+    return cdf_path
+
+
+def l0_sci_data_to_cdf(stepper, data: dict, original_filename: Path, destination_dir: Path
 ) -> Path:
     """
     Write level 0 eea science data to a level 1 cdf file.
@@ -223,16 +404,20 @@ def l0_sci_data_to_cdf(
         f'1.0.{file_metadata["version"]}',
     )
     if data:
-        calibration_file = get_calibration_file(hermes_eea.stepper_table)
-        read_calibration_file(calibration_file)
+        """
+        hermes_eea.stepper_table for now is defined in hermes_eea/hermes_eea/__init__.py
+        """
+      
+        # calibration_file = get_calibration_file(hermes_eea.stepper_table)
+        # read_calibration_file(calibration_file)
 
         myEEA = EEA(file_metadata)
         # SkymapFactory, now as does FPI, also populates my EEA data model
-        SkymapFactory(data, calib.energies, calib.deflections, myEEA)
+        skymap_factory(data, stepper, myEEA)
 
         # In the beginning, testing phase of this project, while we adjust things.
         # This will show us which packets have a workable amount of data
-        most_active = np.where(np.array(myEEA.stats) > 150)
+        # most_active = np.where(np.array(myEEA.stats) > 150)
         # these eample start times are also something I would like to keep around for a while
         # example_start_times = Time(
         #    [lib.tt2000_to_datetime(e) for e in myEEA.Epoch[0:10]]
@@ -283,9 +468,10 @@ def read_calibration_file(calib_filename: Path):
 
     Parameters
     ----------
+    DJG says that energies and angles may change
     calib_filename: `pathlib.Path`
         Fully specificied filename of the non-calibrated file (data level < 2)
-
+        0 1
     Returns
     -------
     output_filename: `pathlib.Path`

@@ -1,10 +1,10 @@
-name, data_type, bit_length
-SHCOARSE, uint, 32
-SHFINE, uint, 20
-SHFILL, fill, 4
-SHEID, uint, 8
-STEP, uint, 8
-COUNTER1, uint, 16
-COUNTER2, uint, 16
-ACCUM, "uint(34)", 12
-CKSUM16, uint, 16
+name, data_type, bit_length, description
+SHCOARSE, uint, 32, CCSDS Packet 2nd Header Coarse Time
+SHFINE, uint, 20, CCSDS Packet 2nd Header Fine Time
+SHFILL, fill, 4, CCSDS Packet 2nd Header Fill
+SHEID, uint, 8, CCSDS Packet 2nd Header Extended ID
+STEP, uint, 8, Stepper table step index for this packet
+COUNTER1, uint, 16, Estimate 1 of the number of counts in this accumulation
+COUNTER2, uint, 16, Estimate 2 of the number of counts in this accumulation
+ACCUM, "uint(34)", 12, EEA raw skymap counts
+CKSUM16, uint, 16, Checksum
