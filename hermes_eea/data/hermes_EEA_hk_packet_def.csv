@@ -1,0 +1,37 @@
+name, data_type, bit_length, description
+SHCOARSE, uint, 32, CCSDS Packet 2nd Header Coarse Time
+SHFINE, uint, 20, CCSDS Packet 2nd Header Fine Time
+SHFILL, fill, 4, CCSDS Packet 2nd Header Fill
+SHEID, uint, 8, CCSDS Packet 2nd Header Extended ID
+FILL, fill, 4, Fill
+UPLOAD_STATE, uint, 1, Upload Data sub-state
+EEA_OPMODE, uint, 3, EEA operating mode
+FAILFC, uint, 8, EEA failed TC function code
+FILL2, fill, 1, Fill
+SAFESRC, uint, 8, EEA safe mode source
+FILL3, fill, 2, Fill
+TCBUFSEU, uint, 1, EEA TC buffer SEU
+TCTMRERR, uint, 1, EEA TC buffer TMR error
+TMBUFSEU, uint, 1, EEA TM fifo SEU
+TMTMRERR, uint, 1, EEA TM fifo TMR error
+TMUFIOW, uint, 1, EEA TM fifo underflow error
+T_FEE, uint, 16, EEA Front End Electronics Board temp
+FILL4, fill, 16, Fill
+V_5_7I, uint, 16, EEA 5.7V current monitor
+V_5_7V, uint, 16, EEA 5.7V voltage monitor
+V_NS_7V, uint, 16, EEA -5.7V voltage monitor
+V_11, uint, 16, EEA 11V current monitor
+V_11V, uint, 16, EEA 11V voltage monitor
+V_3_3V, uint, 16, EEA 3.3V Voltage monitor
+V_3_3I, uint, 16, EEA 3.3V current monitor
+T_LVPS, uint, 16, EEA LVPS temperature
+ANODE_V, uint, 16, Anode_mon
+ESA_BULK_V, uint, 16, ESA_Bulk_mon
+DEF_BULK_V, uint, 16, Deflector_Bulk_mon
+FILL5, fill, 11, Fill
+V_IO_PLUG, uint, 1, V/10 Plug State
+STPR_TBL, uint, 3, Stepper Table Selection
+STPR_EN, uint, 1, Stepper Enable bit
+PPS_DUR, uint, 16, Duration since last PPS
+TIME_DUR, uint, 16, Duration since last Time Packet
+CKSUM16, uint, 16, Checksum

@@ -5,7 +5,7 @@ __author__ = "Richard Strub <richard.f.strub@nasa.gov>"
 import numpy as np
 
 
-def helpConvertEEA(decoded):
+def help_convert_eaa(decoded) -> np.ndarray:
     """
 
     Parameters
