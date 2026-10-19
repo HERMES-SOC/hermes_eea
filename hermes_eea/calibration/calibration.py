@@ -220,7 +220,7 @@ def l0_sci_data_to_cdf(
         file_metadata["instrument"],
         file_metadata["time"],
         "l1",
-        f'1.0.{file_metadata["version"]}',
+        "1.0.0",
     )
     if data:
         calibration_file = get_calibration_file(hermes_eea.stepper_table)
